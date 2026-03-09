@@ -2,7 +2,7 @@ export default function GlassButton({ children, onClick, className = "" }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center rounded-full bg-glass backdrop-blur-[24px] active:scale-95 transition-transform ${className}`}
+      className={`btn-press flex items-center justify-center rounded-full bg-glass backdrop-blur-xl ${className}`}
     >
       {children}
     </button>

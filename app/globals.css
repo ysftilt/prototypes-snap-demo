@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------
+   Font — Aspekta 650 (semi-bold)
+   ------------------------------------------------ */
 @font-face {
   font-family: "Aspekta";
   src: url("/fonts/Aspekta-650.woff2") format("woff2");
@@ -7,7 +10,16 @@
   font-display: swap;
 }
 
+/* ------------------------------------------------
+   Design Tokens — Figma → Tailwind v4
+   Colors, typography, and easing curves.
+   These become Tailwind utilities automatically:
+     --color-panel       → bg-panel, text-panel
+     --color-glass       → bg-glass
+     --ease-out-quart    → ease-out-quart
+   ------------------------------------------------ */
 @theme {
+  /* Colors */
   --color-panel: #232324;
   --color-panel-border: rgba(35, 35, 36, 0.76);
   --color-glass: rgba(43, 42, 44, 0.24);
@@ -15,8 +27,10 @@
   --color-foreground-muted: rgba(247, 247, 248, 0.26);
   --color-page: #141415;
 
+  /* Typography */
   --font-sans: "Aspekta", ui-sans-serif, system-ui, sans-serif;
 
+  /* Easing — ease-out family */
   --ease-out-quad: cubic-bezier(.25, .46, .45, .94);
   --ease-out-cubic: cubic-bezier(.215, .61, .355, 1);
   --ease-out-quart: cubic-bezier(.165, .84, .44, 1);
@@ -25,6 +39,29 @@
   --ease-out-circ: cubic-bezier(.075, .82, .165, 1);
 }
 
+/* ------------------------------------------------
+   Utilities — Reusable interaction patterns
+   ------------------------------------------------ */
+
+/* btn-press: hover scale 0.95, active scale 0.85 */
+@utility btn-press {
+  transition: transform 150ms var(--ease-out-quart),
+              background-color 150ms var(--ease-out-quart);
+  &:hover {
+    transform: scale(1);
+    background-color: color-mix(in srgb, currentColor 4%, transparent);
+    background-blend-mode: lighten;
+  }
+  &:active {
+    transform: scale(0.95);
+    background-color: color-mix(in srgb, currentColor 12%, transparent);
+    background-blend-mode: lighten;
+  }
+}
+
+/* ------------------------------------------------
+   Base — Global body styles
+   ------------------------------------------------ */
 body {
   font-family: var(--font-sans);
   background-color: var(--color-page);

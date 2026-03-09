@@ -8,7 +8,7 @@ export default function StreamPanel({ onSnap, children }) {
   return (
     <div className="flex items-center justify-center w-screen h-dvh sm:p-6">
       {/* 9:16 panel — full bleed on mobile, phone-sized on desktop */}
-      <div className="relative w-full h-full sm:max-w-[393px] sm:aspect-[9/16] sm:h-auto sm:rounded-[48px] sm:border sm:border-panel-border bg-panel overflow-hidden">
+      <div className="relative w-full h-full sm:max-w-[393px] sm:aspect-9/16 sm:h-auto sm:rounded-[48px] sm:border sm:border-panel-border bg-panel overflow-hidden">
 
         {/* Live video feed */}
         <video
@@ -38,7 +38,7 @@ export default function StreamPanel({ onSnap, children }) {
         {/* Footer — gradient + snap button */}
         <div className="absolute bottom-0 left-0 right-0 z-10">
           {/* Gradient overlay */}
-          <div className="h-40 bg-gradient-to-t from-[rgba(20,20,21,0.52)] to-transparent" />
+          <div className="h-40 bg-linear-to-t from-[rgba(20,20,21,0.52)] to-transparent" />
 
           {/* Snap button row */}
           <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-5">

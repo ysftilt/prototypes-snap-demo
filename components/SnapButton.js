@@ -6,7 +6,7 @@ export default function SnapButton({ onSnap }) {
       {/* Snap button */}
       <button
         onClick={onSnap}
-        className="flex items-center gap-2 bg-glass backdrop-blur-[24px] rounded-l-[100px] rounded-r-none h-12 px-4 py-3 active:scale-95 transition-transform"
+        className="btn-press flex items-center gap-2 bg-glass backdrop-blur-xl rounded-l-[100px] rounded-r-none h-12 px-4 py-3"
       >
         <GavelIcon size={20} />
         <span className="text-[17px] leading-[24px] tracking-[-0.17px] font-[650] text-foreground whitespace-nowrap">
@@ -20,7 +20,7 @@ export default function SnapButton({ onSnap }) {
       </button>
 
       {/* Filter button */}
-      <button className="flex items-center justify-center bg-glass backdrop-blur-[24px] rounded-r-[100px] rounded-l-none w-12 h-12 active:scale-95 transition-transform">
+      <button className="btn-press flex items-center justify-center bg-glass backdrop-blur-xl rounded-r-[100px] rounded-l-none w-12 h-12">
         <FilterIcon size={20} />
       </button>
     </div>
