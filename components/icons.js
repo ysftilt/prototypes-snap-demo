@@ -23,6 +23,17 @@ export function GavelIcon({ size = 20 }) {
   );
 }
 
+export function ChatIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <path
+        d="M10 1.5C5.30558 1.5 1.5 4.85786 1.5 9C1.5 11.0727 2.47419 12.9364 4.04218 14.2836C4.15514 14.3807 4.22058 14.5214 4.22058 14.6694V16.8492C4.22058 17.1744 4.56509 17.3836 4.85263 17.2268L7.1197 15.9897C7.22735 15.9309 7.35224 15.9098 7.47362 15.9299C8.28882 16.064 9.13362 16.1364 10 16.1364C14.6944 16.1364 18.5 12.9149 18.5 9C18.5 4.85786 14.6944 1.5 10 1.5Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 15 11.87" fill="none">

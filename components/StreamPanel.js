@@ -4,7 +4,7 @@ import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
 import { GearIcon, MicIcon } from "./icons";
 
-export default function StreamPanel({ onSnap, children }) {
+export default function StreamPanel({ onSnap, footer, hideHeader, exiting, children }) {
   return (
     <div className="flex items-center justify-center w-screen h-dvh sm:p-6">
       {/* 9:16 panel — full bleed on mobile, phone-sized on desktop */}
@@ -21,7 +21,7 @@ export default function StreamPanel({ onSnap, children }) {
         />
 
         {/* Header — top-right controls, stacked vertically */}
-        <div className="absolute top-0 left-0 right-0 z-10 flex items-start justify-end p-5">
+        <div className={`absolute top-0 left-0 right-0 z-10 flex items-start justify-end p-5 transition-exit ${exiting || hideHeader ? "exit-up" : ""}`}>
           <div className="flex flex-col gap-3 items-end">
             <GlassButton className="w-10 h-10">
               <GearIcon size={20} />
@@ -36,13 +36,13 @@ export default function StreamPanel({ onSnap, children }) {
         {children}
 
         {/* Footer — gradient + snap button */}
-        <div className="absolute bottom-0 left-0 right-0 z-10">
+        <div className={`absolute bottom-0 left-0 right-0 z-10 transition-exit ${exiting ? "exit-down" : ""}`}>
           {/* Gradient overlay */}
           <div className="h-40 bg-linear-to-t from-[rgba(20,20,21,0.52)] to-transparent" />
 
-          {/* Snap button row */}
+          {/* Footer row */}
           <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-5">
-            <SnapButton onSnap={onSnap} />
+            {footer ?? <SnapButton onSnap={onSnap} />}
           </div>
         </div>
       </div>

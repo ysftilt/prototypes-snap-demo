@@ -9,6 +9,11 @@ const flowConfig = {
       id: 2,
       title: "Processing Snap",
       description: "Analyzing your capture...",
+      countdownStart: 3,
+      promptBanner: {
+        title: "Talk, then Snap",
+        subtitle: "Talking through details boosts accuracy.",
+      },
     },
     {
       id: 3,

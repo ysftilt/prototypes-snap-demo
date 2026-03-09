@@ -37,25 +37,80 @@
   --ease-out-quint: cubic-bezier(.23, 1, .32, 1);
   --ease-out-expo: cubic-bezier(.19, 1, .22, 1);
   --ease-out-circ: cubic-bezier(.075, .82, .165, 1);
+  
+  /* Easing — ease-in-out family */
+  --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955);
+  --ease-in-out-cubic: cubic-bezier(.645, .045, .355, 1);
+  --ease-in-out-quart: cubic-bezier(.77, 0, .175, 1);
+  --ease-in-out-quint: cubic-bezier(.86, 0, .07, 1);
+  --ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
+  --ease-in-out-circ: cubic-bezier(.785, .135, .15, .86);
 }
+
 
 /* ------------------------------------------------
    Utilities — Reusable interaction patterns
    ------------------------------------------------ */
 
-/* btn-press: hover scale 0.95, active scale 0.85 */
+/* countdown-pop: number entrance animation */
+@keyframes countdown-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* overlay-fade: dark overlay entrance */
+@keyframes overlay-fade {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* slide-up-in: prompt banner entrance */
+@keyframes slide-up-in {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@utility animate-countdown-pop {
+  animation: countdown-pop 300ms var(--ease-out-cubic) both;
+}
+
+@utility animate-overlay-fade {
+  animation: overlay-fade 300ms var(--ease-out-cubic) both;
+}
+
+@utility animate-slide-up-in {
+  animation: slide-up-in 300ms var(--ease-out-cubic) 100ms both;
+}
+
+/* transition-exit: reusable exit transition system
+   Apply .transition-exit to any element, then toggle .exit-up or .exit-down.
+   Duration and easing are easy to tweak in one place. */
+.transition-exit {
+  transition: transform 300ms var(--ease-out-cubic),
+              opacity 300ms var(--ease-out-cubic);
+}
+
+.transition-exit.exit-up {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.transition-exit.exit-down {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+/* btn-press: hover highlight + active scale down */
 @utility btn-press {
   transition: transform 150ms var(--ease-out-quart),
-              background-color 150ms var(--ease-out-quart);
+              box-shadow 150ms var(--ease-out-quart);
   &:hover {
     transform: scale(1);
-    background-color: color-mix(in srgb, currentColor 4%, transparent);
-    background-blend-mode: lighten;
+    box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04);
   }
   &:active {
     transform: scale(0.95);
-    background-color: color-mix(in srgb, currentColor 12%, transparent);
-    background-blend-mode: lighten;
+    box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.1);
   }
 }
 

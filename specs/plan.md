@@ -42,3 +42,26 @@ All steps complete. Build passes clean. The Stream Panel base screen is implemen
 - Dark 9:16 panel with glassmorphic header controls and gradient footer
 - Responsive: full-bleed mobile, centered phone-frame on desktop (`sm:` breakpoint)
 - Snap button advances the flow; StepTwo/Three render overlays on the same panel
+
+---
+
+# Plan: Snap Countdown Overlay — Step 2
+
+## Steps
+
+- [x] **Step 1 — CSS Animations**: Add `countdown-pop`, `overlay-fade`, `slide-up-in` keyframes + utility classes
+- [x] **Step 2 — ChatIcon**: Add speech bubble SVG to `icons.js`
+- [x] **Step 3 — PromptBanner**: Create dark card component with icon + title/subtitle + slide-up animation
+- [x] **Step 4 — StreamPanel footer prop**: Add optional `footer` prop that replaces SnapButton when provided
+- [x] **Step 5 — StepTwo rewrite**: Viewfinder overlay with box-shadow cutout, countdown chain, click-to-dismiss
+- [x] **Step 6 — Config**: Add `countdownStart` and `promptBanner` to step 2 config
+- [x] **Step 7 — Verify**: `pnpm build` passes ✓
+
+## Review
+
+All steps complete. Build passes clean. Step 2 now shows:
+- Dark overlay with 1:1 viewfinder window (shrinks from full-frame via CSS transition)
+- 3-2-1 countdown with pop animation (chained setTimeout, key-based remount)
+- Prompt banner ("Talk, then Snap") slides up at bottom
+- Click anywhere dismisses back to Step 1
+- Video continues playing through the transparent viewfinder cutout
