@@ -6,7 +6,7 @@ export default function SnapButton({ onSnap }) {
       {/* Snap button */}
       <button
         onClick={onSnap}
-        className="btn-press flex items-center gap-2 bg-glass backdrop-blur-xl rounded-l-[100px] rounded-r-none h-12 px-4 py-3"
+        className="btn-press flex items-center gap-2 bg-glass backdrop-blur-xl rounded-l-[100px] rounded-r-none h-12 px-4 py-3 antialiased"
       >
         <GavelIcon size={20} />
         <span className="text-[17px] leading-[24px] tracking-[-0.17px] font-[650] text-foreground whitespace-nowrap">

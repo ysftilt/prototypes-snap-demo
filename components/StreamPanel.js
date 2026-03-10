@@ -5,8 +5,9 @@ import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
 import { GearIcon, MicIcon } from "./icons";
 import { viewfinder, flash as flashConfig, camera } from "@/config/design-config";
+import { timing } from "@/config/animation-config";
 
-export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }) {
+export default function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }) {
   const panelRef = useRef(null);
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
@@ -130,7 +131,7 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
             borderRadius: viewfinderActive ? `${viewfinder.borderRadius}px` : "0px",
             backgroundColor: `rgba(255, 255, 255, ${flashConfig.opacity})`,
             opacity: flash ? 1 : 0,
-            transition: flash ? "none" : "opacity 300ms ease-out",
+            transition: flash ? "none" : `opacity ${timing.flashDuration}ms ease-out`,
           }}
         />
 
@@ -139,13 +140,15 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
           {/* Gradient overlay */}
           <div className="h-40 bg-linear-to-t from-[rgba(20,20,21,0.52)] to-transparent" />
 
-          {/* Footer row */}
-          <div
-            className={`absolute bottom-0 left-0 right-0 flex justify-center pb-5 transition-exit ${exiting ? "exit-down" : ""} ${footerEntering ? "animate-slide-up-in" : ""}`}
-            onAnimationEnd={footerEntering ? onFooterEntered : undefined}
-          >
-            {footer ?? <SnapButton onSnap={onSnap} />}
-          </div>
+          {/* Footer row — hidden entirely in step 3 */}
+          {!hideFooter && (
+            <div
+              className={`absolute bottom-0 left-0 right-0 flex justify-center pb-5 transition-exit ${exiting || footerExiting ? "exit-down" : ""} ${footerEntering ? "animate-slide-up-in" : ""}`}
+              onAnimationEnd={footerEntering ? onFooterEntered : undefined}
+            >
+              {footer ?? <SnapButton onSnap={onSnap} />}
+            </div>
+          )}
         </div>
       </div>
     </div>

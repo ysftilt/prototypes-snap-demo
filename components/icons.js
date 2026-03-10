@@ -31,6 +31,15 @@ export function TalkIcon({ size = 24 }) {
   );
 }
 
+export function PauseIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <rect x="3" y="2" width="4" height="12" rx="1" fill="currentColor" />
+      <rect x="9" y="2" width="4" height="12" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 15 11.87" fill="none">

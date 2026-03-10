@@ -15,14 +15,6 @@ export default function PromptBanner({ title, subtitle, delay, active }) {
         ...(delay != null ? { "--delay": `${delay}ms` } : {}),
       }}
     >
-      {/* Red glow — color-dodge overlay */}
-      <div
-        className="glow-red absolute inset-0 pointer-events-none mix-blend-color-dodge"
-        style={{
-          borderRadius: `${banner.borderRadius}px`,
-          opacity: banner.glowOpacity,
-        }}
-      />
       {/* Icon circle */}
       <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 shrink-0">
         <TalkIcon size={22} />

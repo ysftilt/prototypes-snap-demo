@@ -9,13 +9,15 @@ A camera-based interaction prototype — tap Snap, see a 3-2-1 countdown with vi
 - **Countdown** — 3-2-1 with pop animation and progress ring
 - **Camera flash** — white overlay on capture
 - **Prompt banner** — glassmorphic card with animated red glow and live mic waveform (5-band FFT)
+- **Listing form** — product card with pricing fields slides up after capture
 
 ## Quick Start
 
 ```bash
-pnpm install    # Install dependencies
-pnpm dev        # Dev server → http://localhost:3000
-pnpm build      # Production build
+pnpm install         # Install dependencies
+pnpm dev             # Dev server → http://localhost:3000
+pnpm build           # Production build
+pnpm check:timing   # Verify CSS ↔ JS animation durations are in sync
 ```
 
 ## Project Structure
@@ -34,6 +36,7 @@ components/
   Waveform.js           ← 5-bar frequency visualizer
   GlassButton.js        ← Reusable glassmorphic button
   icons.js              ← SVG icon components
+  listing-form/         ← Step 3 listing card (ListingForm, ProductRow, PricingRow, etc.)
 
 config/
   flow-config.js        ← Step content (titles, subtitles, countdown start)
@@ -42,6 +45,9 @@ config/
 
 hooks/
   useMicLevel.js        ← Mic → 5 frequency levels via Web Audio API
+
+scripts/
+  check-timing-sync.js  ← Verifies CSS --duration-* vars match JS config
 ```
 
 ## How to Edit

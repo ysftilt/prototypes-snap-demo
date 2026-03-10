@@ -165,3 +165,45 @@ All cleanup complete. Build passes. Changes:
 - **Centralized design constants**: New `config/design-config.js` holds waveform, mic bands, flash, banner, and viewfinder values — all previously hardcoded across 5 files
 - **`flashDuration`**: Moved from hardcoded `300` in Flow.js to `timing.flashDuration` in animation-config
 - **README**: Rewritten to reflect current features (webcam, countdown, flash, waveform, glow) and full project structure
+
+---
+
+# Plan: Unify Animation Timings — Single Source of Truth
+
+## Steps
+
+- [x] **Step 1 — Restructure animation-config.js**: Split into `CSS_SYNCED` / `JS_ONLY` sections, export `CSS_DURATION_MAP`, fix `slideUpInDuration` 250→300
+- [x] **Step 2 — Fix StreamPanel hardcoded duration**: Replace inline `"opacity 300ms ease-out"` with `timing.flashDuration`ms template literal
+- [x] **Step 3 — Waveform comment**: Added note that 20ms micro-animation is intentionally not in config
+- [x] **Step 4 — globals.css comments**: Updated `@theme` duration comment to reference `pnpm check:timing`
+- [x] **Step 5 — Sync-check script**: Created `scripts/check-timing-sync.js` — reads CSS, compares to JS config, exits 1 on mismatch
+- [x] **Step 6 — package.json**: Added `"check:timing"` script + `"type": "module"` for clean ESM execution
+
+## Review
+
+All steps complete. Build passes clean. `pnpm check:timing` passes (all 4 values match).
+
+Changes:
+- **animation-config.js**: Restructured into `CSS_SYNCED` (4 values with CSS counterparts) and `JS_ONLY` (7 values). Exports `CSS_DURATION_MAP` for automated checking. Fixed `slideUpInDuration` from 250→300 to match CSS.
+- **StreamPanel.js**: Hardcoded `"opacity 300ms ease-out"` now uses `timing.flashDuration` from config.
+- **Waveform.js**: Comment added on intentional 20ms micro-animation.
+- **globals.css**: Duration section comment now points at JS config as source of truth + references `pnpm check:timing`.
+- **scripts/check-timing-sync.js**: New script — regex-matches `--duration-*` declarations in CSS, compares to JS timing values, exits 1 on mismatch.
+- **package.json**: Added `check:timing` script, `"type": "module"` for clean Node ESM.
+
+---
+
+# Plan: Step 3 Footer Exit Animation
+
+## Steps
+
+- [x] **Step 1 — footerExiting state**: Add `footerExiting` state in Flow.js, set `true` when countdown hits 0 (simultaneous with flash), reset on step 3 mount
+- [x] **Step 2 — hideFooter prop**: Add `hideFooter` flag (true in step 3) so SnapButton doesn't reappear after PromptBanner exits
+- [x] **Step 3 — StreamPanel wiring**: Accept `footerExiting` and `hideFooter` props; `footerExiting` triggers `exit-down` on footer row, `hideFooter` unmounts footer entirely
+
+## Review
+
+All steps complete. Build passes clean. The step 2→3 transition now:
+1. Countdown hits 0 → flash fires + PromptBanner slides down (`exit-down`, 300ms)
+2. After `step3Delay` → footer unmounts, viewfinder dismisses, ListingForm slides up standalone
+3. No SnapButton reappears in step 3 — footer is fully hidden

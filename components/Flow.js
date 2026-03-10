@@ -5,6 +5,7 @@ import flowConfig from "@/config/flow-config";
 import { timing } from "@/config/animation-config";
 import StreamPanel from "./StreamPanel";
 import PromptBanner from "./PromptBanner";
+import ListingForm from "./listing-form/ListingForm";
 
 // Viewfinder is already partially done when step 2 mounts (it started at handleSnap).
 // Remaining viewfinder time after mount + configured delay after viewfinder reaches 1:1.
@@ -50,12 +51,24 @@ export default function Flow() {
     return () => clearTimeout(t);
   }, [currentStep, countdownVisible, countdown, countdownStart]);
 
-  // Flash when countdown reaches 0
+  // Flash when countdown reaches 0, exit footer, then transition to step 3
+  const [footerExiting, setFooterExiting] = useState(false);
+
   useEffect(() => {
     if (currentStep === 2 && countdownVisible && countdown === 0) {
       setFlash(true);
-      const t = setTimeout(() => setFlash(false), timing.flashDuration);
-      return () => clearTimeout(t);
+      // Start footer exit animation alongside flash
+      setFooterExiting(true);
+      const t1 = setTimeout(() => setFlash(false), timing.flashDuration);
+      const t2 = setTimeout(() => {
+        setViewfinderActive(false);
+        setFooterExiting(false);
+        setCurrentStep(3);
+      }, timing.step3Delay);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, [currentStep, countdownVisible, countdown]);
 
@@ -93,6 +106,9 @@ export default function Flow() {
   const banner = step2Config.promptBanner;
   const step3Config = flowConfig.steps[2];
 
+  // Step 1: default SnapButton (via fallback in StreamPanel)
+  // Step 2: PromptBanner replaces SnapButton
+  // Step 3: no footer — ListingForm is standalone
   const footer = isStep2 ? (
     <PromptBanner
       title={banner?.title ?? "Talk, then Snap"}
@@ -102,11 +118,15 @@ export default function Flow() {
     />
   ) : undefined;
 
+  const hideFooter = isStep3;
+
   return (
     <StreamPanel
       onSnap={isStep1 ? handleSnap : isStep3 ? handleFinish : undefined}
       exiting={isStep1 && exiting}
+      footerExiting={footerExiting}
       hideHeader={viewfinderActive}
+      hideFooter={hideFooter}
       viewfinderActive={viewfinderActive}
       viewfinderDuration={timing.viewfinderDuration}
       onViewfinderClick={handleBack}
@@ -153,18 +173,9 @@ export default function Flow() {
         </div>
       )}
 
-      {/* Step 3: placeholder content */}
-      {isStep3 && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
-          <div className="text-center px-8">
-            <p className="text-[12px] leading-[16px] tracking-[0.08em] uppercase text-foreground-muted font-[650] mb-2">
-              Step 3
-            </p>
-            <p className="text-[17px] leading-[24px] tracking-[-0.01em] font-[650]">
-              {step3Config.title}
-            </p>
-          </div>
-        </div>
+      {/* Step 3: listing form */}
+      {isStep3 && step3Config.listingForm && (
+        <ListingForm config={step3Config.listingForm} />
       )}
     </StreamPanel>
   );

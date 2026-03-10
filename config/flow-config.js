@@ -19,6 +19,26 @@ const flowConfig = {
       id: 3,
       title: "Snap Complete",
       description: "Review your snap result.",
+      listingForm: {
+        shortcuts: [
+          { key: "Tab", label: "to edit" },
+          { key: "Enter", label: "to resume" },
+          { key: "Esc", label: "to cancel" },
+        ],
+        product: {
+          title: "Vintage Air Jordan 1 Retro High OG",
+          imageSrc: "/images/product-placeholder.png",
+        },
+        pricing: [
+          { label: "Size", value: "10.5" },
+          { label: "Starting", value: "$220" },
+          { label: "Reserve", value: "$380" },
+        ],
+        countdown: {
+          text: "Auction starts in 3s…",
+          progress: 0.65,
+        },
+      },
     },
   ],
 };
