@@ -12,7 +12,7 @@ export default function SnapButton({ onSnap }) {
         <span className="text-[17px] leading-[24px] tracking-[-0.17px] font-[650] text-foreground whitespace-nowrap">
           Snap
         </span>
-        <span className="flex items-center justify-center bg-foreground-muted rounded-[6px] p-1">
+        <span className="flex items-center justify-center bg-white/10 rounded-[6px] p-1">
           <span className="text-[12px] leading-[16px] tracking-[0.96px] uppercase font-[650] text-foreground">
             S
           </span>

@@ -11,7 +11,7 @@ const flowConfig = {
       description: "Analyzing your capture...",
       countdownStart: 3,
       promptBanner: {
-        title: "Talk, then Snap",
+        title: "Talk about your product",
         subtitle: "Talking through details boosts accuracy.",
       },
     },

@@ -1,25 +1,45 @@
-import { ChatIcon } from "./icons";
+import { TalkIcon } from "./icons";
+import Waveform from "./Waveform";
+import useMicLevel from "../hooks/useMicLevel";
+import { banner } from "@/config/design-config";
 
-export default function PromptBanner({ title, subtitle, delay }) {
+export default function PromptBanner({ title, subtitle, delay, active }) {
+  const levels = useMicLevel(active);
+
   return (
     <div
-      className="animate-slide-up-in flex items-center gap-3 bg-glass backdrop-blur-xl rounded-[20px] p-3 mx-5 z-100"
-      style={delay != null ? { "--delay": `${delay}ms` } : undefined}
+      className="animate-slide-up-in relative overflow-hidden flex items-center gap-2 bg-glass backdrop-blur-xl p-4 mx-5 w-full z-100 border-white/10 border"
+      style={{
+        height: `${banner.height}px`,
+        borderRadius: `${banner.borderRadius}px`,
+        ...(delay != null ? { "--delay": `${delay}ms` } : {}),
+      }}
     >
+      {/* Red glow — color-dodge overlay */}
+      <div
+        className="glow-red absolute inset-0 pointer-events-none mix-blend-color-dodge"
+        style={{
+          borderRadius: `${banner.borderRadius}px`,
+          opacity: banner.glowOpacity,
+        }}
+      />
       {/* Icon circle */}
-      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-black/10 shrink-0">
-        <ChatIcon size={18} />
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 shrink-0">
+        <TalkIcon size={22} />
       </div>
 
       {/* Text */}
-      <div className="min-w-0">
-        <p className="text-[17px] leading-[20px] tracking-[-0.01em] font-[650] text-foreground my-1">
+      <div className="min-w-0 flex flex-col gap-2 grow-1">
+        <p className="text-[17px] leading-none tracking-[-0.15px] font-[650] text-foreground">
           {title}
         </p>
-        <p className="text-[15px] leading-[18px] tracking-[-0.01em] text-foreground-muted">
+        <p className="text-[15px] leading-none text-foreground-secondary">
           {subtitle}
         </p>
       </div>
+
+      {/* Waveform */}
+      <Waveform levels={levels} active={active} />
     </div>
   );
 }

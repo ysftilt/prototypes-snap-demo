@@ -109,3 +109,59 @@ All steps complete. Build passes clean. Changes:
 - **Simultaneous viewfinder**: `viewfinderActive` is now independent state — set in the same frame as `setExiting(true)` in `handleSnap`, so viewfinder shrinks at the same time buttons exit (no more 350ms sequential delay)
 - **Header timing**: `hideHeader` now derives from `viewfinderActive` (not `isStep2`), so header exits simultaneously with viewfinder start
 - **Easing cleanup**: StreamPanel viewfinder transition uses `var(--ease-out-cubic)` instead of inline cubic-bezier
+
+---
+
+# Plan: Waveform Mic Feedback in PromptBanner
+
+## Steps
+
+- [x] **Step 1 — useMicLevel hook**: Create `hooks/useMicLevel.js` — requests mic, creates AnalyserNode (fftSize 32), rAF loop reads 5 frequency bins normalized to 0–1
+- [x] **Step 2 — Waveform component**: Create `components/Waveform.js` — 5 bars (4px wide, 2px gap, rounded-full, bg-foreground-muted), resting heights [6,10,12,4,6]px, scale to 24px max based on levels
+- [x] **Step 3 — PromptBanner integration**: Add Waveform to right side of banner, wire useMicLevel via `active` prop, pass from Flow.js
+
+## Review
+
+All steps complete. Build passes clean. Changes:
+- **hooks/useMicLevel.js**: Custom hook that requests mic access, creates AudioContext + AnalyserNode, reads 5 frequency bins in rAF loop. Gracefully returns zeros on permission denial. Full cleanup on unmount/deactivation.
+- **components/Waveform.js**: 5 bars matching Figma spec — 4px wide, 2px gap, rounded-full, bg-foreground-muted. Heights interpolate between resting [6,10,12,4,6]px and 24px max based on mic levels. 100ms ease-out transition for smooth animation.
+- **components/PromptBanner.js**: Added Waveform to right side after text column with ml-auto push. Calls useMicLevel internally with `active` prop.
+- **components/Flow.js**: Passes `active={isStep2}` to PromptBanner so mic starts when Step 2 is active.
+
+---
+
+# Plan: Fix Waveform Frequency Mapping & Opacity
+
+## Steps
+
+- [x] **Step 1**: Fix fftSize 32→256 in useMicLevel.js, average bin ranges per bar for voice-relevant frequency bands
+- [x] **Step 2**: Add per-bar opacity ramp [0.20, 0.25, 0.30, 0.40, 0.50] in Waveform.js, replace static bg-white/30
+
+## Review
+
+Build passes. Changes:
+- **hooks/useMicLevel.js**: fftSize 256 (128 bins, ~187Hz each). 5 averaged bin ranges covering voice fundamentals through high harmonics.
+- **components/Waveform.js**: Per-bar opacity via inline rgba() — right bars (higher pitch) are visibly brighter than left bars.
+
+---
+
+# Pre-Commit Cleanup: Audit & Documentation
+
+## Steps
+
+- [x] **Step 1 — Dead code**: Removed unused `ChatIcon` from icons.js
+- [x] **Step 2 — Timing mismatch**: Set `exitDuration` to 300ms in animation-config.js (was 200, CSS was 300). Removed unused keys: `bannerDuration`, `countdownPopDuration`, `slideUpInDefaultDelay`
+- [x] **Step 3 — design-config.js**: Created `config/design-config.js` — central file for waveform, mic bands, flash, banner, and viewfinder constants
+- [x] **Step 4 — Wire up**: Waveform.js, useMicLevel.js, PromptBanner.js, StreamPanel.js, Flow.js all import from design-config/animation-config instead of magic numbers
+- [x] **Step 5 — Comments**: Added header comments to Waveform.js and useMicLevel.js
+- [x] **Step 6 — README**: Rewrote to cover current feature set, project structure (including new config files), and editing guide
+- [x] **Step 7 — Verify**: `pnpm build` passes ✓
+
+## Review
+
+All cleanup complete. Build passes. Changes:
+- **Dead code removed**: `ChatIcon` (unused export), `bannerDuration`/`countdownPopDuration`/`slideUpInDefaultDelay` (unused config keys)
+- **Timing aligned**: `exitDuration` now 300ms in both JS config and CSS `--duration-exit`
+- **Centralized design constants**: New `config/design-config.js` holds waveform, mic bands, flash, banner, and viewfinder values — all previously hardcoded across 5 files
+- **`flashDuration`**: Moved from hardcoded `300` in Flow.js to `timing.flashDuration` in animation-config
+- **README**: Rewritten to reflect current features (webcam, countdown, flash, waveform, glow) and full project structure

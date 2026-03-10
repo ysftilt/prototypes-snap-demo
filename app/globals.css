@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------
-   Font — Aspekta 650 (semi-bold)
+   Font — Aspekta
    ------------------------------------------------ */
+@font-face {
+  font-family: "Aspekta";
+  src: url("/fonts/Aspekta-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Aspekta";
   src: url("/fonts/Aspekta-650.woff2") format("woff2");
@@ -24,7 +31,8 @@
   --color-panel-border: rgba(35, 35, 36, 0.76);
   --color-glass: rgba(43, 42, 44, 0.24);
   --color-foreground: #f7f7f8;
-  --color-foreground-muted: rgba(247, 247, 248, 0.26);
+  --color-foreground-secondary: rgba(247, 247, 248, 0.56);
+  --color-foreground-muted: rgba(247, 247, 248, 0.32);
   --color-page: #141415;
 
   /* Typography */
@@ -108,6 +116,36 @@
   &:active {
     transform: scale(0.95);
     box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ------------------------------------------------
+   Glow — Red color-dodge overlay with P3 → oklch → hex fallback
+   ------------------------------------------------ */
+@keyframes glow-drift {
+  0%   { translate: -20% 10%; }
+  25%  { translate: 30% 0%; }
+  50%  { translate: 10% 20%; }
+  75%  { translate: -15% -5%; }
+  100% { translate: -20% 10%; }
+}
+
+.glow-red {
+  width: 140%;
+  height: 140%;
+  left: -20%;
+  top: -20%;
+  animation: glow-drift 4s ease-in-out infinite;
+
+  /* Hex fallback */
+  background: radial-gradient(ellipse at 50% 60%, rgba(204, 36, 25, 0.5), transparent 60%);
+  /* oklch fallback */
+  background: radial-gradient(ellipse at 50% 60%, oklch(0.52 0.22 25 / 0.5), transparent 60%);
+}
+
+@supports (color: color(display-p3 1 0 0)) {
+  .glow-red {
+    background: radial-gradient(ellipse at 50% 60%, color(display-p3 0.9 0.15 0.1 / 0.5), transparent 60%);
   }
 }
 

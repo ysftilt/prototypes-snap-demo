@@ -50,6 +50,15 @@ export default function Flow() {
     return () => clearTimeout(t);
   }, [currentStep, countdownVisible, countdown, countdownStart]);
 
+  // Flash when countdown reaches 0
+  useEffect(() => {
+    if (currentStep === 2 && countdownVisible && countdown === 0) {
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), timing.flashDuration);
+      return () => clearTimeout(t);
+    }
+  }, [currentStep, countdownVisible, countdown]);
+
   // --- Navigation ---
   const handleSnap = useCallback(() => {
     // Fire exit + viewfinder simultaneously
@@ -63,6 +72,7 @@ export default function Flow() {
     }, timing.exitDuration + timing.enterDelay);
   }, []);
 
+  const [flash, setFlash] = useState(false);
   const [footerEntering, setFooterEntering] = useState(false);
 
   const handleBack = useCallback(() => {
@@ -88,6 +98,7 @@ export default function Flow() {
       title={banner?.title ?? "Talk, then Snap"}
       subtitle={banner?.subtitle ?? "Talking through details boosts accuracy."}
       delay={timing.bannerDelay}
+      active={isStep2}
     />
   ) : undefined;
 
@@ -99,13 +110,14 @@ export default function Flow() {
       viewfinderActive={viewfinderActive}
       viewfinderDuration={timing.viewfinderDuration}
       onViewfinderClick={handleBack}
+      flash={flash}
       footer={footer}
       footerEntering={footerEntering}
       onFooterEntered={() => setFooterEntering(false)}
     >
       {/* Step 2: countdown number + progress ring */}
       {isStep2 && countdownVisible && countdown > 0 && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none mix-blend-difference">
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none ">
           {/* Progress ring — depletes over full countdown */}
           <svg
             className="absolute animate-countdown-pop"
@@ -120,7 +132,7 @@ export default function Flow() {
                 r="68"
                 fill="none"
                 stroke="white"
-                strokeWidth="4"
+                strokeWidth="8"
                 strokeLinecap="round"
                 strokeDasharray={Math.PI * 2 * 68}
                 style={{
