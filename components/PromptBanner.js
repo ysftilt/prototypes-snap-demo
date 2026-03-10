@@ -29,7 +29,7 @@ export default function PromptBanner({ title, subtitle, delay, active }) {
       </div>
 
       {/* Text */}
-      <div className="min-w-0 flex flex-col gap-2 grow-1">
+      <div className="min-w-0 flex flex-col gap-2 grow">
         <p className="text-[17px] leading-none tracking-[-0.15px] font-[650] text-foreground">
           {title}
         </p>
