@@ -37,6 +37,11 @@ export const banner = {
   glowOpacity: 0.40,      // glow-red overlay opacity
 };
 
+/** Camera — set to false to skip webcam and use fallback video */
+export const camera = {
+  enabled: true,
+};
+
 /** Viewfinder cutout */
 export const viewfinder = {
   borderRadius: 24,       // px — rounded corners when active
