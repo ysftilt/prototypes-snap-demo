@@ -39,7 +39,7 @@ export const banner = {
 
 /** Camera — set to false to skip webcam and use fallback video */
 export const camera = {
-  enabled: true,
+  enabled: false,
 };
 
 /** Viewfinder cutout */
