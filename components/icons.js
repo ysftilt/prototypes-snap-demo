@@ -31,6 +31,23 @@ export function TalkIcon({ size = 24 }) {
   );
 }
 
+export function CameraIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 16" fill="none">
+      <path d="M18 0H6C4.9 0 4 0.9 4 2V10C4 11.1 4.9 12 6 12H18C19.1 12 20 11.1 20 10V2C20 0.9 19.1 0 18 0ZM12 9C10.34 9 9 7.66 9 6C9 4.34 10.34 3 12 3C13.66 3 15 4.34 15 6C15 7.66 13.66 9 12 9ZM2 4H0V14C0 15.1 0.9 16 2 16H16V14H2V4Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function CameraOffIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 18" fill="none">
+      <path d="M18 2H6C4.9 2 4 2.9 4 4V12C4 13.1 4.9 14 6 14H18C19.1 14 20 13.1 20 12V4C20 2.9 19.1 2 18 2ZM12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11ZM2 6H0V16C0 17.1 0.9 18 2 18H16V16H2V6Z" fill="currentColor" />
+      <line x1="1" y1="17" x2="19" y2="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 15 11.87" fill="none">

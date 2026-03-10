@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
-import { GearIcon, MicIcon } from "./icons";
+import { GearIcon, MicIcon, CameraIcon, CameraOffIcon } from "./icons";
 import { viewfinder, flash as flashConfig } from "@/config/design-config";
 
 export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }) {
@@ -11,6 +11,18 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
   const [hasWebcam, setHasWebcam] = useState(false);
+  const [cameraOn, setCameraOn] = useState(true);
+  const streamObjRef = useRef(null);
+
+  const toggleCamera = () => {
+    const stream = streamObjRef.current;
+    if (stream) {
+      const next = !cameraOn;
+      stream.getVideoTracks().forEach((t) => { t.enabled = next; });
+      setCameraOn(next);
+    }
+  };
+
   // Try to get webcam stream, fall back to video file on denial
   useEffect(() => {
     let cancelled = false;
@@ -23,6 +35,7 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
           stream.getTracks().forEach((t) => t.stop());
           return;
         }
+        streamObjRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
@@ -39,6 +52,7 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
       }
+      streamObjRef.current = null;
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
@@ -87,6 +101,11 @@ export default function StreamPanel({ onSnap, footer, hideHeader, exiting, viewf
             <GlassButton className="w-10 h-10">
               <MicIcon size={20} />
             </GlassButton>
+            {hasWebcam && (
+              <GlassButton className="w-10 h-10" onClick={toggleCamera}>
+                {cameraOn ? <CameraIcon size={18} /> : <CameraOffIcon size={18} />}
+              </GlassButton>
+            )}
           </div>
         </div>
 
