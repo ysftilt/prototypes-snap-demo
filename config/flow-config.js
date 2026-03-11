@@ -31,8 +31,8 @@ const flowConfig = {
         },
         pricing: [
           { label: "Size", value: "10.5" },
-          { label: "Starting", value: "$220" },
-          { label: "Reserve", value: "$380" },
+          { label: "Starting", prefix: "$", value: "$220" },
+          { label: "Reserve", prefix: "$", value: "$380" },
         ],
         countdown: {
           text: "Auction starts in 3s…",

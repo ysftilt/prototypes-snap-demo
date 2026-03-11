@@ -11,8 +11,8 @@ export default function ProductRow({ title, imageSrc }) {
       </div>
 
       {/* Title */}
-      <div className="flex-1 flex items-center min-h-[72px] py-1">
-        <p className="text-body2 font-[500] text-foreground">
+      <div className="flex-1 flex items-start min-h-[72px] py-1 px-1">
+        <p className="text-body2 font-medium text-foreground">
           {title}
         </p>
       </div>

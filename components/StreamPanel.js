@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
 import { GearIcon, MicIcon } from "./icons";
 import { viewfinder, flash as flashConfig, camera } from "@/config/design-config";
 import { timing } from "@/config/animation-config";
 
-export default function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }) {
+function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }, ref) {
   const panelRef = useRef(null);
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
@@ -47,6 +47,38 @@ export default function StreamPanel({ onSnap, footer, hideHeader, hideFooter, ex
       }
     };
   }, []);
+
+  // Expose an async captureFrame method — uses toBlob to avoid blocking the main thread
+  useImperativeHandle(ref, () => ({
+    captureFrame() {
+      const video = videoRef.current;
+      const panel = panelRef.current;
+      if (!video || !panel) return Promise.resolve(null);
+
+      const { width: pw, height: ph } = panel.getBoundingClientRect();
+      const side = Math.min(pw, ph - insetY * 2);
+      const canvas = document.createElement("canvas");
+      canvas.width = side;
+      canvas.height = side;
+
+      const vw = video.videoWidth || video.offsetWidth;
+      const vh = video.videoHeight || video.offsetHeight;
+      const scale = Math.max(pw / vw, ph / vh);
+      const sx = (vw - pw / scale) / 2;
+      const sy = (vh - ph / scale) / 2 + insetY / scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, sx, sy, side / scale, side / scale, 0, 0, side, side);
+
+      return new Promise((resolve) => {
+        canvas.toBlob(
+          (blob) => resolve(blob ? URL.createObjectURL(blob) : null),
+          "image/jpeg",
+          0.85,
+        );
+      });
+    },
+  }), [insetY]);
 
   // Measure panel and compute vertical inset for 1:1 square cutout
   useEffect(() => {
@@ -154,3 +186,5 @@ export default function StreamPanel({ onSnap, footer, hideHeader, hideFooter, ex
     </div>
   );
 }
+
+export default forwardRef(StreamPanel);

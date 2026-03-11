@@ -102,7 +102,6 @@
 @utility animate-slide-up-in {
   animation: slide-up-in var(--duration-slide-up-in) var(--ease-out-cubic) var(--delay, 100ms) both;
 }
-
 /* transition-exit: reusable exit transition system
    Apply .transition-exit to any element, then toggle .exit-up or .exit-down.
    Duration and easing are easy to tweak in one place. */

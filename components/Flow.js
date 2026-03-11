@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import flowConfig from "@/config/flow-config";
 import { timing } from "@/config/animation-config";
 import StreamPanel from "./StreamPanel";
@@ -13,9 +13,11 @@ const COUNTDOWN_START_DELAY =
   (timing.viewfinderDuration - timing.exitDuration) + timing.countdownStartDelay;
 
 export default function Flow() {
+  const streamRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [exiting, setExiting] = useState(false);
   const [viewfinderActive, setViewfinderActive] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
 
   // --- Step 2: countdown ---
   const step2Config = flowConfig.steps[1];
@@ -56,6 +58,11 @@ export default function Flow() {
 
   useEffect(() => {
     if (currentStep === 2 && countdownVisible && countdown === 0) {
+      // Kick off async capture — doesn't block the transition
+      streamRef.current?.captureFrame().then((url) => {
+        if (url) setCapturedImage(url);
+      });
+
       setFlash(true);
       // Start footer exit animation alongside flash
       setFooterExiting(true);
@@ -122,6 +129,7 @@ export default function Flow() {
 
   return (
     <StreamPanel
+      ref={streamRef}
       onSnap={isStep1 ? handleSnap : isStep3 ? handleFinish : undefined}
       exiting={isStep1 && exiting}
       footerExiting={footerExiting}
@@ -175,7 +183,7 @@ export default function Flow() {
 
       {/* Step 3: listing form */}
       {isStep3 && step3Config.listingForm && (
-        <ListingForm config={step3Config.listingForm} />
+        <ListingForm config={step3Config.listingForm} capturedImage={capturedImage} />
       )}
     </StreamPanel>
   );
