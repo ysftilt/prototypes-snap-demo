@@ -21,9 +21,9 @@ const flowConfig = {
       description: "Review your snap result.",
       listingForm: {
         shortcuts: [
-          { key: "Tab", label: "to edit" },
-          { key: "Enter", label: "to resume" },
-          { key: "Esc", label: "to cancel" },
+          { key: "Tab", label: "Edit" },
+          { key: "Enter", label: "Resume" },
+          { key: "Esc", label: "Cancel" },
         ],
         product: {
           title: "Vintage Air Jordan 1 Retro High OG",

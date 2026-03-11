@@ -1,8 +1,8 @@
 export default function ProductRow({ title, imageSrc }) {
   return (
-    <div className="flex items-center gap-3 px-3 pt-3 pb-2">
-      {/* Product image placeholder */}
-      <div className="w-[72px] h-[72px] rounded-xl bg-panel-border/76 shrink-0 overflow-hidden">
+    <div className="flex items-start gap-2 pr-3">
+      {/* Product image */}
+      <div className="w-[72px] h-[72px] rounded-[12px] border border-panel-border/52 shrink-0 overflow-hidden">
         {imageSrc ? (
           <img src={imageSrc} alt={title} className="w-full h-full object-cover" />
         ) : (
@@ -11,9 +11,11 @@ export default function ProductRow({ title, imageSrc }) {
       </div>
 
       {/* Title */}
-      <p className="text-[17px] leading-[22px] tracking-[-0.01em] font-[650] text-foreground">
-        {title}
-      </p>
+      <div className="flex-1 flex items-center min-h-[72px] py-1">
+        <p className="text-body2 font-[500] text-foreground">
+          {title}
+        </p>
+      </div>
     </div>
   );
 }

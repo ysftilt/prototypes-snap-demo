@@ -1,4 +1,5 @@
 import { GavelIcon, FilterIcon } from "./icons";
+import KeyShortcut from "./KeyShortcut";
 
 export default function SnapButton({ onSnap }) {
   return (
@@ -9,14 +10,10 @@ export default function SnapButton({ onSnap }) {
         className="btn-press flex items-center gap-2 bg-glass backdrop-blur-xl rounded-l-[100px] rounded-r-none h-12 px-4 py-3 antialiased"
       >
         <GavelIcon size={20} />
-        <span className="text-[17px] leading-[24px] tracking-[-0.17px] font-[650] text-foreground whitespace-nowrap">
+        <span className="text-[17px] leading-body1 tracking-body1 font-[650] text-foreground whitespace-nowrap">
           Snap
         </span>
-        <span className="flex items-center justify-center bg-white/10 rounded-[6px] p-1">
-          <span className="text-[12px] leading-[16px] tracking-[0.96px] uppercase font-[650] text-foreground">
-            S
-          </span>
-        </span>
+        <KeyShortcut label="S" />
       </button>
 
       {/* Filter button */}
