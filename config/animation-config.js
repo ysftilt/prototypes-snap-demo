@@ -7,9 +7,9 @@
 
 // --- CSS-synced durations (must match globals.css @theme --duration-* vars) ---
 const CSS_SYNCED = {
-  exitDuration:         200,  // → --duration-exit: 300ms
+  exitDuration:         300,  // → --duration-exit: 300ms
   countdownPopDuration: 300,  // → --duration-countdown-pop: 300ms
-  slideUpInDuration:    250,  // → --duration-slide-up-in: 300ms
+  slideUpInDuration:    300,  // → --duration-slide-up-in: 300ms
   btnPressDuration:     150,  // → --duration-btn-press: 150ms
 };
 
@@ -22,6 +22,7 @@ const JS_ONLY = {
   enterDelay:            0,   // pause after exit before step 2 content mounts
   flashDuration:       300,   // camera flash fade-out
   step3Delay:          500,   // flash duration + breathing room before listing form mounts
+  snapReleaseDelay:     80,   // button release beat before exit begins
 };
 
 export const timing = { ...CSS_SYNCED, ...JS_ONLY };

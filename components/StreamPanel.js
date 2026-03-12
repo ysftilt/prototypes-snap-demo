@@ -7,7 +7,7 @@ import { GearIcon, MicIcon } from "./icons";
 import { viewfinder, flash as flashConfig, camera } from "@/config/design-config";
 import { timing } from "@/config/animation-config";
 
-function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, children }, ref) {
+function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, onReset, children }, ref) {
   const panelRef = useRef(null);
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
@@ -116,7 +116,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
         {/* Header — top-right controls, stacked vertically */}
         <div className={`absolute top-0 left-0 right-0 z-10 flex items-start justify-end p-5 transition-exit ${exiting || hideHeader ? "exit-up" : ""}`}>
           <div className="flex flex-col gap-3 items-end">
-            <GlassButton className="w-10 h-10">
+            <GlassButton className="w-10 h-10" onClick={onReset}>
               <GearIcon size={20} />
             </GlassButton>
             <GlassButton className="w-10 h-10">
@@ -128,18 +128,19 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
         {/* Overlay content slot — used by StepTwo/Three */}
         {children}
 
-        {/* Viewfinder overlay — always in DOM, controlled by viewfinderActive */}
+        {/* Viewfinder + flash wrapper — single element gets flash-punch so scrim masks flash edges */}
         <div
           onClick={viewfinderActive ? onViewfinderClick : undefined}
-          className="absolute inset-0 z-10"
+          className={`absolute inset-0 z-10 ${flash ? "animate-flash-punch" : ""}`}
           style={{
             pointerEvents: viewfinderActive ? "auto" : "none",
             cursor: viewfinderActive ? "pointer" : "default",
           }}
         >
+          {/* Viewfinder scrim */}
           <div
-            className="absolute"
             style={{
+              position: "absolute",
               top: viewfinderActive ? `${insetY}px` : "0px",
               bottom: viewfinderActive ? `${insetY}px` : "0px",
               left: "0px",
@@ -150,22 +151,21 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
                 `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic)`,
             }}
           />
+          {/* Camera flash */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: viewfinderActive ? `${insetY}px` : "0px",
+              bottom: viewfinderActive ? `${insetY}px` : "0px",
+              left: "0px",
+              right: "0px",
+              borderRadius: viewfinderActive ? `${viewfinder.borderRadius}px` : "0px",
+              backgroundColor: `rgba(255, 255, 255, ${flashConfig.opacity})`,
+              opacity: flash ? 1 : 0,
+              transition: flash ? "none" : `opacity ${timing.flashDuration}ms var(--ease-out-cubic)`,
+            }}
+          />
         </div>
-
-        {/* Camera flash — covers viewfinder area */}
-        <div
-          className="absolute z-30 pointer-events-none"
-          style={{
-            top: viewfinderActive ? `${insetY}px` : "0px",
-            bottom: viewfinderActive ? `${insetY}px` : "0px",
-            left: "0px",
-            right: "0px",
-            borderRadius: viewfinderActive ? `${viewfinder.borderRadius}px` : "0px",
-            backgroundColor: `rgba(255, 255, 255, ${flashConfig.opacity})`,
-            opacity: flash ? 1 : 0,
-            transition: flash ? "none" : `opacity ${timing.flashDuration}ms ease-out`,
-          }}
-        />
 
         {/* Footer — gradient + snap button */}
         <div className="absolute bottom-0 left-0 right-0 z-10">

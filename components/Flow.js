@@ -81,15 +81,18 @@ export default function Flow() {
 
   // --- Navigation ---
   const handleSnap = useCallback(() => {
-    // Fire exit + viewfinder simultaneously
-    setExiting(true);
-    setViewfinderActive(true);
-
-    // Mount step 2 content after exit animation finishes
+    // Brief pause so the :active scale registers before transition
     setTimeout(() => {
-      setExiting(false);
-      setCurrentStep(2);
-    }, timing.exitDuration + timing.enterDelay);
+      // Fire exit + viewfinder simultaneously
+      setExiting(true);
+      setViewfinderActive(true);
+
+      // Mount step 2 content after exit animation finishes
+      setTimeout(() => {
+        setExiting(false);
+        setCurrentStep(2);
+      }, timing.exitDuration + timing.enterDelay);
+    }, timing.snapReleaseDelay);
   }, []);
 
   const [flash, setFlash] = useState(false);
@@ -104,6 +107,19 @@ export default function Flow() {
   const handleFinish = useCallback(() => {
     setCurrentStep(1);
   }, []);
+
+  const handleReset = useCallback(() => {
+    setCurrentStep(1);
+    setExiting(false);
+    setViewfinderActive(false);
+    setCapturedImage(null);
+    setCountdown(countdownStart);
+    setCountdownVisible(false);
+    setRingDepleted(false);
+    setFooterExiting(false);
+    setFlash(false);
+    setFooterEntering(false);
+  }, [countdownStart]);
 
   // --- Compute StreamPanel props per step ---
   const isStep1 = currentStep === 1;
@@ -142,16 +158,23 @@ export default function Flow() {
       footer={footer}
       footerEntering={footerEntering}
       onFooterEntered={() => setFooterEntering(false)}
+      onReset={handleReset}
     >
       {/* Step 2: countdown number + progress ring */}
       {isStep2 && countdownVisible && countdown > 0 && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none ">
-          {/* Progress ring — depletes over full countdown */}
+          {/* Progress ring — depletes over full countdown, glows on last tick */}
           <svg
             className="absolute animate-countdown-pop"
             width="160"
             height="160"
             viewBox="0 0 160 160"
+            style={{
+              filter: countdown === 1
+                ? "drop-shadow(0 0 12px rgba(255, 255, 255, 0.5))"
+                : "drop-shadow(0 0 0px rgba(255, 255, 255, 0))",
+              transition: "filter 400ms var(--ease-out-cubic)",
+            }}
           >
             <g transform="rotate(-90 80 80)">
               <circle

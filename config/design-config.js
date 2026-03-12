@@ -7,7 +7,7 @@
 export const waveform = {
   barWidth: 4,            // px — each bar's width (Tailwind w-1)
   barGap: 2,              // px — gap between bars
-  restingHeights: [8, 8, 8, 8, 8],  // px — idle height per bar
+  restingHeights: [5, 8, 12, 8, 5],  // px — idle height per bar (arc shape)
   maxHeight: 48,          // px — fully-active bar height
   minOpacity: 0.20,       // lowest bar opacity (silence)
   maxOpacity: 0.90,       // highest bar opacity (loud)
@@ -44,6 +44,6 @@ export const camera = {
 
 /** Viewfinder cutout */
 export const viewfinder = {
-  borderRadius: 24,       // px — rounded corners when active
+  borderRadius: 32,       // px — rounded corners when active
   scrimColor: "rgba(20, 20, 21, 0.75)",
 };

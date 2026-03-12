@@ -11,7 +11,7 @@ export default function PricingRow({ pricing = [] }) {
   }
 
   return (
-    <div className="flex gap-2 pt-1">
+    <div className="flex gap-2 pt-1 w-fill">
       {pricing.map(({ label, prefix }, i) => (
         <TextInput
           key={i}

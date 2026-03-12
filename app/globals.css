@@ -95,12 +95,33 @@
   100% { transform: translateY(0); opacity: 1; }
 }
 
+/* stagger-in: subtle child reveal inside a sliding container */
+@keyframes stagger-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* flash-punch: inward scale pulse on capture moment */
+@keyframes flash-punch {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
 @utility animate-countdown-pop {
   animation: countdown-pop var(--duration-countdown-pop) var(--ease-out-cubic) both;
 }
 
 @utility animate-slide-up-in {
   animation: slide-up-in var(--duration-slide-up-in) var(--ease-out-cubic) var(--delay, 100ms) both;
+}
+
+@utility animate-stagger-in {
+  animation: stagger-in 250ms var(--ease-out-cubic) var(--delay, 0ms) both;
+}
+
+@utility animate-flash-punch {
+  animation: flash-punch 250ms var(--ease-out-cubic) both;
 }
 /* transition-exit: reusable exit transition system
    Apply .transition-exit to any element, then toggle .exit-up or .exit-down.
@@ -159,6 +180,17 @@
     transform: scale(0.95);
     box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
   }
+}
+
+/* ------------------------------------------------
+   Shortcut Banner — pill hover state
+   ------------------------------------------------ */
+/* hover background for shortcut pills */
+.shortcut-pill {
+  transition: background-color 150ms ease;
+}
+.shortcut-pill:hover {
+  background-color: rgba(255, 255, 255, 0.10); /* gray-10 */
 }
 
 /* ------------------------------------------------

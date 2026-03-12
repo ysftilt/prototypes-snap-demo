@@ -1,6 +1,6 @@
 export default function TextInput({ label, value, onChange }) {
   return (
-    <div className="flex-1 flex flex-col gap-1 w-fi">
+    <div className="flex-1 min-w-0 flex flex-col gap-1">
       <span className="text-[13px] leading-[20px] font-medium text-[#a3a0a7] px-1">
         {label}
       </span>
