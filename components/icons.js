@@ -40,6 +40,14 @@ export function PauseIcon({ size = 20 }) {
   );
 }
 
+export function PlayIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M4 2.5a.5.5 0 0 1 .77-.42l8 5a.5.5 0 0 1 0 .84l-8 5A.5.5 0 0 1 4 12.5v-10z" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function FilterIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 15 11.87" fill="none">

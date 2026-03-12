@@ -22,7 +22,7 @@ const flowConfig = {
       listingForm: {
         shortcuts: [
           { key: "Tab", label: "Edit" },
-          { key: "Enter", label: "Resume" },
+          { key: "Space", label: "Pause" },
           { key: "Esc", label: "Cancel" },
         ],
         product: {
@@ -31,12 +31,11 @@ const flowConfig = {
         },
         pricing: [
           { label: "Size", value: "10.5" },
-          { label: "Starting", prefix: "$", value: "$220" },
-          { label: "Reserve", prefix: "$", value: "$380" },
+          { label: "Starting", prefix: "$", value: "220" },
+          { label: "Reserve", prefix: "$", value: "380" },
         ],
         countdown: {
-          text: "Auction starts in 3s…",
-          progress: 0.65,
+          text: "Auction starts in 5s…",
         },
       },
     },

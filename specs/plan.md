@@ -207,3 +207,35 @@ All steps complete. Build passes clean. The step 2→3 transition now:
 1. Countdown hits 0 → flash fires + PromptBanner slides down (`exit-down`, 300ms)
 2. After `step3Delay` → footer unmounts, viewfinder dismisses, ListingForm slides up standalone
 3. No SnapButton reappears in step 3 — footer is fully hidden
+
+---
+
+# Fix: Step 2→3 Footer Re-Entry Bug
+
+## Problem
+
+`setFooterExiting(false)` fired at T+500ms (in t2 timer) while footer was still mounted until T+750ms (in t3 timer). During that 250ms gap, the footer lost its exit class and briefly slid back into view.
+
+## Fix
+
+- [x] Move `setFooterExiting(false)` from t2 timer into t3 timer (same tick as `setCurrentStep(3)`)
+
+Footer now stays in exit-down state from T+0ms until unmount at T+750ms. No re-entry.
+
+---
+
+# Fix: Currency Prefix Protection & Countdown Pause on Hover
+
+## Steps
+
+- [x] **Fix 1 — TextInput prefix**: Re-added `prefix` prop rendering as static `<span>` in flex row; stripped `$` from config values since prefix is rendered separately
+- [x] **Fix 2 — Countdown pause**: Added `paused` prop to `CountdownBar`; `ListingForm` tracks hover state on card div and passes it down
+- [x] **Verify**: `pnpm build` passes ✓
+
+## Review
+
+Both fixes implemented. Build passes clean. Changes:
+- **TextInput.js**: When `prefix` is provided, renders a non-editable `<span>` before the input in a flex wrapper — users cannot delete the `$` symbol
+- **flow-config.js**: Pricing values changed from `"$220"`/`"$380"` to `"220"`/`"380"` (prefix rendered separately)
+- **CountdownBar.js**: Accepts `paused` prop; skips tick setTimeout when true, resumes when false
+- **ListingForm.js**: Added `"use client"` directive, `hovered` state via `onMouseEnter`/`onMouseLeave` on card div, passed as `paused` to CountdownBar

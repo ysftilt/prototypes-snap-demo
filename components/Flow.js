@@ -67,14 +67,18 @@ export default function Flow() {
       // Start footer exit animation alongside flash
       setFooterExiting(true);
       const t1 = setTimeout(() => setFlash(false), timing.flashDuration);
+      // Dismiss viewfinder after step3Delay, then mount step 3 once it finishes exiting
       const t2 = setTimeout(() => {
         setViewfinderActive(false);
+      }, timing.step3Delay);
+      const t3 = setTimeout(() => {
         setFooterExiting(false);
         setCurrentStep(3);
-      }, timing.step3Delay);
+      }, timing.step3Delay + timing.viewfinderDuration);
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
+        clearTimeout(t3);
       };
     }
   }, [currentStep, countdownVisible, countdown]);

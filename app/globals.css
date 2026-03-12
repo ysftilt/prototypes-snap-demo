@@ -194,6 +194,30 @@
 }
 
 /* ------------------------------------------------
+   Countdown Bar — pause/play button hover
+   ------------------------------------------------ */
+.countdown-btn {
+  transition: background-color 150ms ease;
+}
+.countdown-btn:hover {
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
+/* ------------------------------------------------
+   Text Input — hover state
+   ------------------------------------------------ */
+.text-input {
+  background-color: rgba(35, 35, 36, 0.58);
+  transition: background-color 150ms ease;
+}
+.text-input:hover {
+  background-color: rgba(35, 35, 36, 0.68);
+}
+.text-input:focus {
+  background-color: rgba(35, 35, 36, 0.68);
+}
+
+/* ------------------------------------------------
    Base — Global body styles
    ------------------------------------------------ */
 body {

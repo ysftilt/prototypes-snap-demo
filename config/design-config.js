@@ -42,8 +42,20 @@ export const camera = {
   enabled: false,
 };
 
+/** Pause/play icon crossfade */
+export const iconTransition = {
+  duration: 150,          // ms — crossfade duration
+  exitOpacity: 0,
+  exitScale: 0.95,
+  exitBlur: 2,            // px
+  enterOpacity: 1,
+  enterScale: 1,
+  enterBlur: 0,           // px
+  easing: "ease-out",
+};
+
 /** Viewfinder cutout */
 export const viewfinder = {
-  borderRadius: 32,       // px — rounded corners when active
+  borderRadius: 40,       // px — rounded corners when active
   scrimColor: "rgba(20, 20, 21, 0.75)",
 };
