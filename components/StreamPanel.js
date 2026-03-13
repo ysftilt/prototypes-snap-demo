@@ -163,7 +163,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
               boxShadow: `0 0 0 9999px ${viewfinder.scrimColor}`,
               opacity: viewfinderActive ? 1 : 0,
               transition:
-                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic), opacity ${viewfinderDuration}ms var(--ease-out-cubic)`,
+                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic), opacity ${viewfinderDuration / 2}ms var(--ease-out-cubic)`,
             }}
           />
 

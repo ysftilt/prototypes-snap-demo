@@ -32,16 +32,13 @@ export const transitions = {
     countdownStart:   80 + (base.viewfinder - base.exit) + base.exit + 100,
   },
 
+  // Morph activation is gated on capture completion + form mount, not a
+  // timeline offset. See captureReadyRef / step3PendingRef in Flow.js.
   captureToListing: {
-    flashStart:        0,                           // flash on + footer exit begin
-    captureFrame:      0,                           // async frame grab
-    flashEnd:          base.flashHold,              // flash begins fade-out
-    dismissViewfinder: base.flashHold,              // scrim fades out + morph starts simultaneously
-    mountStep3:        base.flashHold,              // form mounts, morph begins (same tick as dismiss)
-    morphStart:        base.flashHold,
-    formSlideUp:       base.flashHold,
-    bannerStagger:     base.flashHold + 200,
-    countdownBar:      base.flashHold + 400,
+    flashStart:        0,                                          // flash on + footer exit begin
+    flashEnd:          base.flashHold,                             // flash begins fade-out
+    mountStep3:        base.flashHold + base.viewfinder,           // form mounts (gated on capture ready)
+    dismissViewfinder: base.flashHold + base.viewfinder,           // scrim fades as morph image flies
   },
 
   listingToIdle: {

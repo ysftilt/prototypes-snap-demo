@@ -80,14 +80,34 @@ export default function Flow() {
   // Flash when countdown reaches 0, exit footer, then transition to step 3
   const [footerExiting, setFooterExiting] = useState(false);
 
+  // Refs to coordinate async capture with deterministic timeline.
+  // The morph image + form slide-up must start at the same moment — so
+  // mountStep3 is gated on capture completion, not just a timeline offset.
+  const captureReadyRef = useRef(false);
+  const step3PendingRef = useRef(false);
+
+  const mountStep3Now = useCallback(() => {
+    setFooterExiting(false);
+    setViewfinderActive(false);
+    setCurrentStep(3);
+  }, []);
+
   useEffect(() => {
     if (currentStep === 2 && countdownVisible && countdown === 0) {
+      captureReadyRef.current = false;
+      step3PendingRef.current = false;
+
       // Kick off async capture — when ready, activate morph + hide real thumbnail
       streamRef.current?.captureFrame().then((url) => {
         if (url) {
           setCapturedImage(url);
           setMorphActive(true);
           setMorphImageVisible(false);
+        }
+        captureReadyRef.current = true;
+        // If the timeline already tried to mount step 3, do it now
+        if (step3PendingRef.current) {
+          mountStep3Now();
         }
       });
 
@@ -96,13 +116,19 @@ export default function Flow() {
         flashEnd:           () => { setFlash(false); },
         dismissViewfinder:  () => {
           setViewfinderActive(false);
-          setFooterExiting(false);
-          setCurrentStep(3);
+        },
+        mountStep3:         () => {
+          if (captureReadyRef.current) {
+            mountStep3Now();
+          } else {
+            // Capture still pending — defer step 3 until it resolves
+            step3PendingRef.current = true;
+          }
         },
       }, scaleDuration);
       return cleanup;
     }
-  }, [currentStep, countdownVisible, countdown]);
+  }, [currentStep, countdownVisible, countdown, mountStep3Now]);
 
   // --- Navigation ---
   const handleSnap = useCallback(() => {
