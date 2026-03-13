@@ -5,8 +5,10 @@ import flowConfig from "@/config/flow-config";
 import { base, transitions, constants } from "@/config/animation-config";
 import StreamPanel from "./StreamPanel";
 import PromptBanner from "./PromptBanner";
+import ListeningTag from "./ListeningTag";
 import ListingForm from "./listing-form/ListingForm";
 import MorphImage from "./MorphImage";
+import useMicLevel from "../hooks/useMicLevel";
 import { useSpeed } from "./debug/SpeedContext";
 
 /**
@@ -191,6 +193,9 @@ export default function Flow() {
   const isStep2 = currentStep === 2;
   const isStep3 = currentStep === 3;
 
+  // Mic levels — always active, drives ListeningTag waveform in every step
+  const micLevels = useMicLevel(true);
+
   const banner = step2Config.promptBanner;
   const step3Config = flowConfig.steps[2];
 
@@ -203,7 +208,6 @@ export default function Flow() {
       title={banner?.title ?? "Talk, then Snap"}
       subtitle={banner?.subtitle ?? "Talking through details boosts accuracy."}
       delay={scaleDuration(bannerDelay)}
-      active={isStep2}
     />
   ) : undefined;
 
@@ -226,6 +230,7 @@ export default function Flow() {
       footerEntering={footerEntering}
       onFooterEntered={() => setFooterEntering(false)}
       onReset={handleReset}
+      listeningTag={<ListeningTag levels={micLevels} active />}
     >
       {/* Step 2: countdown number + progress ring */}
       {isStep2 && countdownVisible && countdown > 0 && (

@@ -53,6 +53,14 @@ export const iconTransition = {
   easing: "ease-out",
 };
 
+/** Listening tag — top-left pill with mini waveform */
+export const listeningTag = {
+  waveform: {
+    restingHeights: [4, 4, 4, 4, 4],
+    maxHeight: 16,
+  },
+};
+
 /** Viewfinder cutout */
 export const viewfinder = {
   borderRadius: 40,       // px — rounded corners when active

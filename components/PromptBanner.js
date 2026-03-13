@@ -1,11 +1,7 @@
 import { TalkIcon } from "./icons";
-import Waveform from "./Waveform";
-import useMicLevel from "../hooks/useMicLevel";
 import { banner } from "@/config/design-config";
 
-export default function PromptBanner({ title, subtitle, delay, active }) {
-  const levels = useMicLevel(active);
-
+export default function PromptBanner({ title, subtitle, delay }) {
   return (
     <div
       className="animate-slide-up-in relative overflow-hidden flex items-center gap-2 bg-glass backdrop-blur-xl p-4 mx-5 w-full z-100 border-white/10 border"
@@ -29,9 +25,6 @@ export default function PromptBanner({ title, subtitle, delay, active }) {
           {subtitle}
         </p>
       </div>
-
-      {/* Waveform */}
-      <Waveform levels={levels} active={active} />
     </div>
   );
 }
