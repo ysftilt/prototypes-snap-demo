@@ -3,13 +3,13 @@
 import { useState } from "react";
 import TextInput from "../TextInput";
 
-export default function ProductRow({ title, imageSrc }) {
+export default function ProductRow({ title, imageSrc, imageRef, imageVisible = true }) {
   const [value, setValue] = useState(title);
 
   return (
     <div className="flex items-start gap-2">
       {/* Product image */}
-      <div className="w-[72px] h-[72px] rounded-[12px] border border-panel-border/52 shrink-0 overflow-hidden">
+      <div ref={imageRef} className="w-[72px] h-[72px] rounded-[12px] border border-panel-border/52 shrink-0 overflow-hidden" style={{ opacity: imageVisible ? 1 : 0 }}>
         {imageSrc ? (
           <img src={imageSrc} alt={value} className="w-full h-full object-cover" />
         ) : (

@@ -42,9 +42,8 @@ export const camera = {
   enabled: false,
 };
 
-/** Pause/play icon crossfade */
+/** Pause/play icon crossfade (duration lives in animation-config.js base.iconCrossfade) */
 export const iconTransition = {
-  duration: 150,          // ms — crossfade duration
   exitOpacity: 0,
   exitScale: 0.95,
   exitBlur: 2,            // px

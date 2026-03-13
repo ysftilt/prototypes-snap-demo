@@ -239,3 +239,26 @@ Both fixes implemented. Build passes clean. Changes:
 - **flow-config.js**: Pricing values changed from `"$220"`/`"$380"` to `"220"`/`"380"` (prefix rendered separately)
 - **CountdownBar.js**: Accepts `paused` prop; skips tick setTimeout when true, resumes when false
 - **ListingForm.js**: Added `"use client"` directive, `hovered` state via `onMouseEnter`/`onMouseLeave` on card div, passed as `paused` to CountdownBar
+
+---
+
+# Refactor: Streamline Animation Orchestration
+
+## Steps
+
+- [x] **Step 1 — Restructure animation-config.js**: Replace `CSS_SYNCED`/`JS_ONLY` split with `base` (tuning knobs), `transitions` (timeline objects for each state change), `constants` (rarely-changed values). Backward-compat `timing` flat export kept temporarily.
+- [x] **Step 2 — Fix CSS ↔ JS mismatches**: Added `--duration-flash-punch: 300ms` to globals.css, updated `animate-flash-punch` to use it. Removed unused `@keyframes stagger-in` and `@utility animate-stagger-in`.
+- [x] **Step 3 — Refactor Flow.js orchestration**: Added `scheduleTransition(timeline, handlers)` helper. `handleSnap` and countdown-zero effect now read timeline offsets directly instead of nested setTimeouts. Replaced hardcoded `filter 400ms` with `base.morph`.
+- [x] **Step 4 — Remove magic numbers from components**: ListingForm uses `base.morph` and `constants.staggerDelay`. CountdownBar uses `base.iconCrossfade` instead of `iconTransition.duration`. MorphImage and StreamPanel use `base.*` directly.
+- [x] **Step 5 — Update check-timing-sync.js**: Reads from `base` instead of `timing`, checks all 5 CSS-synced values including new `flashPunch`.
+- [x] **Step 6 — Verify**: `pnpm check:timing` passes (5/5 in sync), `pnpm build` passes clean.
+
+## Review
+
+All animation timing now flows from a single config with clear structure:
+- **`base`**: 9 tuning knobs (the only values you tweak)
+- **`transitions`**: 3 timeline objects (read top-to-bottom to see full choreography)
+- **`constants`**: 4 rarely-changed values
+- **`CSS_DURATION_MAP`**: 5 entries (was 4, added `flashPunch`)
+
+Flow.js orchestration uses `scheduleTransition()` — flat timeline + handler map replaces nested setTimeout chains. No more magic numbers in components.

@@ -4,10 +4,12 @@ import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "re
 import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
 import { GearIcon, MicIcon } from "./icons";
-import { viewfinder, flash as flashConfig, camera } from "@/config/design-config";
-import { timing } from "@/config/animation-config";
+import { viewfinder, camera } from "@/config/design-config";
+import { base } from "@/config/animation-config";
+import { useSpeed } from "./debug/SpeedContext";
 
-function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, footerEntering, onFooterEntered, onReset, children }, ref) {
+function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, capturedImage, footerEntering, onFooterEntered, onReset, children }, ref) {
+  const { scaleDuration } = useSpeed();
   const panelRef = useRef(null);
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
@@ -78,6 +80,18 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
         );
       });
     },
+    getViewfinderRect() {
+      const panel = panelRef.current;
+      if (!panel) return null;
+      const r = panel.getBoundingClientRect();
+      const side = Math.min(r.width, r.height - insetY * 2);
+      return {
+        top: r.top + insetY,
+        left: r.left + (r.width - side) / 2,
+        width: side,
+        height: side,
+      };
+    },
   }), [insetY]);
 
   // Measure panel and compute vertical inset for 1:1 square cutout
@@ -128,7 +142,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
         {/* Overlay content slot — used by StepTwo/Three */}
         {children}
 
-        {/* Viewfinder + flash wrapper — single element gets flash-punch so scrim masks flash edges */}
+        {/* Viewfinder — scrim + captured photo + flash */}
         <div
           onClick={viewfinderActive ? onViewfinderClick : undefined}
           className={`absolute inset-0 z-10 ${flash ? "animate-flash-punch" : ""}`}
@@ -137,7 +151,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
             cursor: viewfinderActive ? "pointer" : "default",
           }}
         >
-          {/* Viewfinder scrim */}
+          {/* Scrim — darkened overlay outside the viewfinder cutout */}
           <div
             style={{
               position: "absolute",
@@ -147,22 +161,45 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
               right: "0px",
               borderRadius: viewfinderActive ? `${viewfinder.borderRadius}px` : "0px",
               boxShadow: `0 0 0 9999px ${viewfinder.scrimColor}`,
+              opacity: viewfinderActive ? 1 : 0,
               transition:
-                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic)`,
+                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic), opacity ${viewfinderDuration}ms var(--ease-out-cubic)`,
             }}
           />
-          {/* Camera flash */}
+
+          {/* Captured photo — visible only while viewfinder is up, fades in underneath flash */}
+          {capturedImage && viewfinderActive && (
+            <img
+              src={capturedImage}
+              alt=""
+              className="pointer-events-none"
+              style={{
+                position: "absolute",
+                top: `${insetY}px`,
+                bottom: `${insetY}px`,
+                left: "0px",
+                right: "0px",
+                borderRadius: `${viewfinder.borderRadius}px`,
+                objectFit: "cover",
+                width: "100%",
+                height: `calc(100% - ${insetY * 2}px)`,
+              }}
+            />
+          )}
+
+          {/* Flash — white overlay inside viewfinder, fades out to reveal photo */}
           <div
-            className="absolute pointer-events-none"
+            className="pointer-events-none"
             style={{
-              top: viewfinderActive ? `${insetY}px` : "0px",
-              bottom: viewfinderActive ? `${insetY}px` : "0px",
+              position: "absolute",
+              top: `${insetY}px`,
+              bottom: `${insetY}px`,
               left: "0px",
               right: "0px",
-              borderRadius: viewfinderActive ? `${viewfinder.borderRadius}px` : "0px",
-              backgroundColor: `rgba(255, 255, 255, ${flashConfig.opacity})`,
+              borderRadius: `${viewfinder.borderRadius}px`,
+              backgroundColor: "white",
               opacity: flash ? 1 : 0,
-              transition: flash ? "none" : `opacity ${timing.flashDuration}ms var(--ease-out-cubic)`,
+              transition: flash ? "none" : `opacity ${scaleDuration(base.flashFade)}ms var(--ease-out-cubic)`,
             }}
           />
         </div>

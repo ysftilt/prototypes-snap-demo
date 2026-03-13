@@ -34,6 +34,7 @@
   --color-foreground-secondary: rgba(247, 247, 248, 0.56);
   --color-foreground-muted: rgba(247, 247, 248, 0.32);
   --color-page: #141415;
+  --color-interactive: rgba(255, 255, 255, 0.1);
 
   /* Typography — font family */
   --font-sans: "Aspekta", ui-sans-serif, system-ui, sans-serif;
@@ -63,10 +64,11 @@
   
   /* Durations — source of truth is config/animation-config.js
      Run `pnpm check:timing` to verify these stay in sync. */
-  --duration-exit: 300ms;
+  --duration-exit: 250ms;
   --duration-countdown-pop: 300ms;
-  --duration-slide-up-in: 300ms;
+  --duration-slide-up-in: 250ms;
   --duration-btn-press: 150ms;
+  --duration-flash-punch: 350ms;
 
   /* Easing — ease-in-out family */
   --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955);
@@ -95,12 +97,6 @@
   100% { transform: translateY(0); opacity: 1; }
 }
 
-/* stagger-in: subtle child reveal inside a sliding container */
-@keyframes stagger-in {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
 /* flash-punch: inward scale pulse on capture moment */
 @keyframes flash-punch {
   0% { transform: scale(1); }
@@ -116,12 +112,18 @@
   animation: slide-up-in var(--duration-slide-up-in) var(--ease-out-cubic) var(--delay, 100ms) both;
 }
 
-@utility animate-stagger-in {
-  animation: stagger-in 250ms var(--ease-out-cubic) var(--delay, 0ms) both;
+@utility animate-flash-punch {
+  animation: flash-punch var(--duration-flash-punch) var(--ease-out-cubic) both;
 }
 
-@utility animate-flash-punch {
-  animation: flash-punch 250ms var(--ease-out-cubic) both;
+/* slide-down-out: listing form dismiss */
+@keyframes slide-down-out {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(40px); opacity: 0; }
+}
+
+@utility animate-slide-down-out {
+  animation: slide-down-out var(--duration-exit) var(--ease-out-cubic) both;
 }
 /* transition-exit: reusable exit transition system
    Apply .transition-exit to any element, then toggle .exit-up or .exit-down.
@@ -182,16 +184,6 @@
   }
 }
 
-/* ------------------------------------------------
-   Shortcut Banner — pill hover state
-   ------------------------------------------------ */
-/* hover background for shortcut pills */
-.shortcut-pill {
-  transition: background-color 150ms ease;
-}
-.shortcut-pill:hover {
-  background-color: rgba(255, 255, 255, 0.10); /* gray-10 */
-}
 
 /* ------------------------------------------------
    Countdown Bar — pause/play button hover
@@ -203,19 +195,6 @@
   background-color: rgba(255, 255, 255, 0.10);
 }
 
-/* ------------------------------------------------
-   Text Input — hover state
-   ------------------------------------------------ */
-.text-input {
-  background-color: rgba(35, 35, 36, 0.58);
-  transition: background-color 150ms ease;
-}
-.text-input:hover {
-  background-color: rgba(35, 35, 36, 0.68);
-}
-.text-input:focus {
-  background-color: rgba(35, 35, 36, 0.68);
-}
 
 /* ------------------------------------------------
    Base — Global body styles

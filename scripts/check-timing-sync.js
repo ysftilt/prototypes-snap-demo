@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Dynamic import of the config (ESM)
-const { timing, CSS_DURATION_MAP } = await import(
+const { base, CSS_DURATION_MAP } = await import(
   resolve(__dirname, "../config/animation-config.js")
 );
 
@@ -20,7 +20,7 @@ const css = readFileSync(cssPath, "utf-8");
 let ok = true;
 
 for (const [jsKey, cssVar] of Object.entries(CSS_DURATION_MAP)) {
-  const jsValue = timing[jsKey];
+  const jsValue = base[jsKey];
 
   // Match e.g. --duration-exit: 300ms;
   const re = new RegExp(`${cssVar.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}:\\s*(\\d+)ms`);
@@ -35,7 +35,7 @@ for (const [jsKey, cssVar] of Object.entries(CSS_DURATION_MAP)) {
   const cssValue = Number(match[1]);
   if (cssValue !== jsValue) {
     console.error(
-      `✗ ${cssVar}: CSS=${cssValue}ms, JS ${jsKey}=${jsValue}ms`
+      `✗ ${cssVar}: CSS=${cssValue}ms, JS base.${jsKey}=${jsValue}ms`
     );
     ok = false;
   } else {

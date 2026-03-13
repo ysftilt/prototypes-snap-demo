@@ -1,6 +1,7 @@
-export default function TextInput({ label, showLabel = true, value, onChange, multiline = false, prefix }) {
-  const sharedClass = "flex-1 text-input rounded-lg px-2 py-1.5 text-[13px] leading-[20px] font-medium text-foreground outline-none";
+const BASE = "bg-interactive/50 hover:bg-interactive focus-within:bg-interactive transition-colors duration-150";
+const SHARED = `flex-1 rounded-lg px-2 py-1.5 text-[13px] leading-[20px] font-medium text-foreground outline-none ${BASE}`;
 
+export default function TextInput({ label, showLabel = true, value, onChange, multiline = false, prefix }) {
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-1">
       {showLabel && label && (
@@ -12,10 +13,10 @@ export default function TextInput({ label, showLabel = true, value, onChange, mu
         <textarea
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className={`${sharedClass} resize-none`}
+          className={`${SHARED} resize-none`}
         />
       ) : prefix ? (
-        <div className="flex items-center text-input rounded-lg">
+        <div className={`flex items-center rounded-lg ${BASE}`}>
           <span className="pl-2 text-[13px] leading-[20px] font-medium text-foreground select-none pointer-events-none">
             {prefix}
           </span>
@@ -31,7 +32,7 @@ export default function TextInput({ label, showLabel = true, value, onChange, mu
           type="text"
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className={sharedClass}
+          className={SHARED}
         />
       )}
     </div>

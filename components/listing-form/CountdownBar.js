@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { PauseIcon, PlayIcon } from "../icons";
-import { timing } from "@/config/animation-config";
+import { base, constants } from "@/config/animation-config";
 import { iconTransition } from "@/config/design-config";
+import { useSpeed } from "../debug/SpeedContext";
 
-export default function CountdownBar({ text, paused = false }) {
-  const duration = timing.countdownBarDuration;
+export default function CountdownBar({ text, paused = false, onComplete }) {
+  const { scaleDuration } = useSpeed();
+  const duration = constants.countdownBarDuration;
   const [remaining, setRemaining] = useState(duration);
   const [started, setStarted] = useState(false);
   const [manualPaused, setManualPaused] = useState(false);
@@ -26,7 +28,7 @@ export default function CountdownBar({ text, paused = false }) {
 
   // Start after mount (let slide-up animation finish)
   useEffect(() => {
-    const t = setTimeout(() => setStarted(true), timing.countdownBarDelay);
+    const t = setTimeout(() => setStarted(true), scaleDuration(constants.countdownBarDelay));
     return () => clearTimeout(t);
   }, []);
 
@@ -49,9 +51,10 @@ export default function CountdownBar({ text, paused = false }) {
 
   // Tick down — tracks partial progress so pause/resume is instant
   useEffect(() => {
-    if (!started || remaining <= 1 || effectivePaused) return;
+    if (!started || remaining <= 0 || effectivePaused) return;
 
-    const left = 1000 - elapsedRef.current;
+    const scaledTick = scaleDuration(1000);
+    const left = scaledTick - elapsedRef.current;
     tickStartRef.current = Date.now();
 
     const t = setTimeout(() => {
@@ -64,10 +67,19 @@ export default function CountdownBar({ text, paused = false }) {
   }, [started, remaining, effectivePaused]);
 
   // When running: transition target is the end of the current tick
-  const tickEndFraction = started ? Math.max(0, (remaining - 1 - 1) / (duration - 1)) : 1;
-  const timeLeft = 1000 - elapsedRef.current;
+  const tickEndFraction = started ? Math.max(0, (remaining - 1) / duration) : 1;
+  const timeLeft = scaleDuration(1000) - elapsedRef.current;
 
-  const finished = remaining <= 1;
+  const finished = remaining <= 0;
+
+  // Notify parent when countdown completes
+  useEffect(() => {
+    if (finished && onComplete) {
+      const t = setTimeout(onComplete, scaleDuration(1000));
+      return () => clearTimeout(t);
+    }
+  }, [finished, onComplete]);
+
   const label = finished ? "Auction starting now" : text.replace(/\d+s/, `${remaining}s`);
 
   const isPaused = frozenPct !== null;
@@ -108,7 +120,7 @@ export default function CountdownBar({ text, paused = false }) {
             opacity: effectivePaused ? iconTransition.exitOpacity : iconTransition.enterOpacity,
             transform: `scale(${effectivePaused ? iconTransition.exitScale : iconTransition.enterScale})`,
             filter: `blur(${effectivePaused ? iconTransition.exitBlur : iconTransition.enterBlur}px)`,
-            transition: `opacity ${iconTransition.duration}ms ${iconTransition.easing}, transform ${iconTransition.duration}ms ${iconTransition.easing}, filter ${iconTransition.duration}ms ${iconTransition.easing}`,
+            transition: `opacity ${base.iconCrossfade}ms ${iconTransition.easing}, transform ${base.iconCrossfade}ms ${iconTransition.easing}, filter ${base.iconCrossfade}ms ${iconTransition.easing}`,
           }}
         >
           <PauseIcon size={20} />
@@ -119,7 +131,7 @@ export default function CountdownBar({ text, paused = false }) {
             opacity: effectivePaused ? iconTransition.enterOpacity : iconTransition.exitOpacity,
             transform: `scale(${effectivePaused ? iconTransition.enterScale : iconTransition.exitScale})`,
             filter: `blur(${effectivePaused ? iconTransition.enterBlur : iconTransition.exitBlur}px)`,
-            transition: `opacity ${iconTransition.duration}ms ${iconTransition.easing}, transform ${iconTransition.duration}ms ${iconTransition.easing}, filter ${iconTransition.duration}ms ${iconTransition.easing}`,
+            transition: `opacity ${base.iconCrossfade}ms ${iconTransition.easing}, transform ${base.iconCrossfade}ms ${iconTransition.easing}, filter ${base.iconCrossfade}ms ${iconTransition.easing}`,
           }}
         >
           <PlayIcon size={20} />

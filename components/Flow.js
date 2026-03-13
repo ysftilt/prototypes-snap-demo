@@ -2,22 +2,46 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import flowConfig from "@/config/flow-config";
-import { timing } from "@/config/animation-config";
+import { base, transitions, constants } from "@/config/animation-config";
 import StreamPanel from "./StreamPanel";
 import PromptBanner from "./PromptBanner";
 import ListingForm from "./listing-form/ListingForm";
+import MorphImage from "./MorphImage";
+import { useSpeed } from "./debug/SpeedContext";
 
-// Viewfinder is already partially done when step 2 mounts (it started at handleSnap).
-// Remaining viewfinder time after mount + configured delay after viewfinder reaches 1:1.
+/**
+ * Schedule a batch of callbacks at the offsets defined in a timeline object.
+ * Offset-0 handlers fire synchronously (critical for React state batching).
+ * `scale` transforms every delay (e.g. for debug playback speed).
+ * Returns a cleanup function that clears all pending timers.
+ */
+function scheduleTransition(timeline, handlers, scale = (ms) => ms) {
+  const timers = [];
+  for (const [key, at] of Object.entries(timeline)) {
+    if (!handlers[key]) continue;
+    if (at === 0) {
+      handlers[key]();
+    } else {
+      timers.push(setTimeout(handlers[key], scale(at)));
+    }
+  }
+  return () => timers.forEach(clearTimeout);
+}
+
+// Countdown start delay: time from mountStep2 to countdownStart
 const COUNTDOWN_START_DELAY =
-  (timing.viewfinderDuration - timing.exitDuration) + timing.countdownStartDelay;
+  transitions.idleToCapture.countdownStart - transitions.idleToCapture.mountStep2;
 
 export default function Flow() {
+  const { scaleDuration } = useSpeed();
   const streamRef = useRef(null);
+  const productImageRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [exiting, setExiting] = useState(false);
   const [viewfinderActive, setViewfinderActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+  const [morphActive, setMorphActive] = useState(false);
+  const [morphImageVisible, setMorphImageVisible] = useState(true);
 
   // --- Step 2: countdown ---
   const step2Config = flowConfig.steps[1];
@@ -38,7 +62,7 @@ export default function Flow() {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => setRingDepleted(true));
         });
-      }, COUNTDOWN_START_DELAY);
+      }, scaleDuration(COUNTDOWN_START_DELAY));
       return () => clearTimeout(t);
     }
     setCountdownVisible(false);
@@ -49,7 +73,7 @@ export default function Flow() {
   useEffect(() => {
     if (currentStep !== 2 || !countdownVisible || countdown <= 0) return;
 
-    const t = setTimeout(() => setCountdown((c) => c - 1), timing.countdownInterval);
+    const t = setTimeout(() => setCountdown((c) => c - 1), scaleDuration(constants.countdownInterval));
     return () => clearTimeout(t);
   }, [currentStep, countdownVisible, countdown, countdownStart]);
 
@@ -58,45 +82,36 @@ export default function Flow() {
 
   useEffect(() => {
     if (currentStep === 2 && countdownVisible && countdown === 0) {
-      // Kick off async capture — doesn't block the transition
+      // Kick off async capture — when ready, activate morph + hide real thumbnail
       streamRef.current?.captureFrame().then((url) => {
-        if (url) setCapturedImage(url);
+        if (url) {
+          setCapturedImage(url);
+          setMorphActive(true);
+          setMorphImageVisible(false);
+        }
       });
 
-      setFlash(true);
-      // Start footer exit animation alongside flash
-      setFooterExiting(true);
-      const t1 = setTimeout(() => setFlash(false), timing.flashDuration);
-      // Dismiss viewfinder after step3Delay, then mount step 3 once it finishes exiting
-      const t2 = setTimeout(() => {
-        setViewfinderActive(false);
-      }, timing.step3Delay);
-      const t3 = setTimeout(() => {
-        setFooterExiting(false);
-        setCurrentStep(3);
-      }, timing.step3Delay + timing.viewfinderDuration);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-        clearTimeout(t3);
-      };
+      const cleanup = scheduleTransition(transitions.captureToListing, {
+        flashStart:         () => { setFlash(true); setFooterExiting(true); },
+        flashEnd:           () => { setFlash(false); },
+        dismissViewfinder:  () => {
+          setViewfinderActive(false);
+          setFooterExiting(false);
+          setCurrentStep(3);
+        },
+      }, scaleDuration);
+      return cleanup;
     }
   }, [currentStep, countdownVisible, countdown]);
 
   // --- Navigation ---
   const handleSnap = useCallback(() => {
-    // Brief pause so the :active scale registers before transition
-    setTimeout(() => {
-      // Fire exit + viewfinder simultaneously
-      setExiting(true);
-      setViewfinderActive(true);
-
-      // Mount step 2 content after exit animation finishes
-      setTimeout(() => {
-        setExiting(false);
-        setCurrentStep(2);
-      }, timing.exitDuration + timing.enterDelay);
-    }, timing.snapReleaseDelay);
+    const cleanup = scheduleTransition(transitions.idleToCapture, {
+      exitStart:   () => { setExiting(true); setViewfinderActive(true); },
+      mountStep2:  () => { setExiting(false); setCurrentStep(2); },
+    }, scaleDuration);
+    // Store cleanup ref for potential teardown (not strictly needed for snap)
+    return cleanup;
   }, []);
 
   const [flash, setFlash] = useState(false);
@@ -107,6 +122,8 @@ export default function Flow() {
     setFooterEntering(true);
     setCurrentStep(1);
   }, []);
+
+  const [listingDismissing, setListingDismissing] = useState(false);
 
   const handleFinish = useCallback(() => {
     setCurrentStep(1);
@@ -123,7 +140,27 @@ export default function Flow() {
     setFooterExiting(false);
     setFlash(false);
     setFooterEntering(false);
+    setMorphActive(false);
+    setMorphImageVisible(true);
+    setListingDismissing(false);
   }, [countdownStart]);
+
+  const handleCountdownComplete = useCallback(() => {
+    setListingDismissing(true);
+    setTimeout(() => {
+      handleReset();
+      setFooterEntering(true);
+    }, scaleDuration(base.exit));
+  }, [handleReset, scaleDuration]);
+
+  const getStartRect = useCallback(() => {
+    return streamRef.current?.getViewfinderRect() ?? null;
+  }, []);
+
+  const handleMorphComplete = useCallback(() => {
+    setMorphActive(false);
+    setMorphImageVisible(true);
+  }, []);
 
   // --- Compute StreamPanel props per step ---
   const isStep1 = currentStep === 1;
@@ -136,11 +173,12 @@ export default function Flow() {
   // Step 1: default SnapButton (via fallback in StreamPanel)
   // Step 2: PromptBanner replaces SnapButton
   // Step 3: no footer — ListingForm is standalone
+  const bannerDelay = transitions.idleToCapture.bannerAppear - transitions.idleToCapture.mountStep2;
   const footer = isStep2 ? (
     <PromptBanner
       title={banner?.title ?? "Talk, then Snap"}
       subtitle={banner?.subtitle ?? "Talking through details boosts accuracy."}
-      delay={timing.bannerDelay}
+      delay={scaleDuration(bannerDelay)}
       active={isStep2}
     />
   ) : undefined;
@@ -156,9 +194,10 @@ export default function Flow() {
       hideHeader={viewfinderActive}
       hideFooter={hideFooter}
       viewfinderActive={viewfinderActive}
-      viewfinderDuration={timing.viewfinderDuration}
+      viewfinderDuration={scaleDuration(base.viewfinder)}
       onViewfinderClick={handleBack}
       flash={flash}
+      capturedImage={capturedImage}
       footer={footer}
       footerEntering={footerEntering}
       onFooterEntered={() => setFooterEntering(false)}
@@ -177,7 +216,7 @@ export default function Flow() {
               filter: countdown === 1
                 ? "drop-shadow(0 0 12px rgba(255, 255, 255, 0.5))"
                 : "drop-shadow(0 0 0px rgba(255, 255, 255, 0))",
-              transition: "filter 400ms var(--ease-out-cubic)",
+              transition: `filter ${scaleDuration(base.morph)}ms var(--ease-out-cubic)`,
             }}
           >
             <g transform="rotate(-90 80 80)">
@@ -193,7 +232,7 @@ export default function Flow() {
                 style={{
                   strokeDashoffset: ringDepleted ? -(Math.PI * 2 * 68) : 0,
                   transition: ringDepleted
-                    ? `stroke-dashoffset ${countdownStart * timing.countdownInterval}ms linear`
+                    ? `stroke-dashoffset ${countdownStart * scaleDuration(constants.countdownInterval)}ms linear`
                     : "none",
                 }}
               />
@@ -210,7 +249,17 @@ export default function Flow() {
 
       {/* Step 3: listing form */}
       {isStep3 && step3Config.listingForm && (
-        <ListingForm config={step3Config.listingForm} capturedImage={capturedImage} />
+        <ListingForm config={step3Config.listingForm} capturedImage={capturedImage} productImageRef={productImageRef} imageVisible={morphImageVisible} onCountdownComplete={handleCountdownComplete} dismissing={listingDismissing} />
+      )}
+
+      {/* Photo morph — floating image from viewfinder to thumbnail */}
+      {morphActive && capturedImage && (
+        <MorphImage
+          src={capturedImage}
+          getStartRect={getStartRect}
+          endRef={productImageRef}
+          onComplete={handleMorphComplete}
+        />
       )}
     </StreamPanel>
   );
