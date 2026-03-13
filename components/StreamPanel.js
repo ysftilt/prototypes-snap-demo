@@ -4,12 +4,12 @@ import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "re
 import GlassButton from "./GlassButton";
 import SnapButton from "./SnapButton";
 import { GearIcon, MicIcon } from "./icons";
-import { viewfinder, camera } from "@/config/design-config";
+import { viewfinder } from "@/config/design-config";
 import { base } from "@/config/animation-config";
 import { useSpeed } from "./debug/SpeedContext";
 
-function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, capturedImage, footerEntering, onFooterEntered, onReset, children }, ref) {
-  const { scaleDuration } = useSpeed();
+function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerExiting, viewfinderActive, viewfinderDuration = 400, onViewfinderClick, flash, capturedImage, footerEntering, onFooterEntered, onReset, listeningTag, children }, ref) {
+  const { scaleDuration, liveCamera } = useSpeed();
   const panelRef = useRef(null);
   const videoRef = useRef(null);
   const [insetY, setInsetY] = useState(0);
@@ -17,7 +17,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
 
   // Try to get webcam stream, fall back to video file on denial
   useEffect(() => {
-    if (!camera.enabled) return;
+    if (!liveCamera) return;
     let cancelled = false;
     let stream;
 
@@ -48,7 +48,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
         videoRef.current.srcObject = null;
       }
     };
-  }, []);
+  }, [liveCamera]);
 
   // Expose an async captureFrame method — uses toBlob to avoid blocking the main thread
   useImperativeHandle(ref, () => ({
@@ -139,6 +139,9 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
           </div>
         </div>
 
+        {/* Listening tag — always visible, top-left */}
+        {listeningTag}
+
         {/* Overlay content slot — used by StepTwo/Three */}
         {children}
 
@@ -163,7 +166,7 @@ function StreamPanel({ onSnap, footer, hideHeader, hideFooter, exiting, footerEx
               boxShadow: `0 0 0 9999px ${viewfinder.scrimColor}`,
               opacity: viewfinderActive ? 1 : 0,
               transition:
-                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic), opacity ${viewfinderDuration}ms var(--ease-out-cubic)`,
+                `top ${viewfinderDuration}ms var(--ease-out-cubic), bottom ${viewfinderDuration}ms var(--ease-out-cubic), border-radius ${viewfinderDuration}ms var(--ease-out-cubic), opacity ${viewfinderDuration / 2}ms var(--ease-out-cubic)`,
             }}
           />
 

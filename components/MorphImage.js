@@ -93,6 +93,8 @@ export default function MorphImage({ src, getStartRect, endRef, onComplete }) {
   const start = startRef.current;
   const isAnimating = transform !== null;
 
+  const pulseDuration = scaleDuration(350);
+
   const style = {
     position: "fixed",
     zIndex: 9999,
@@ -107,6 +109,8 @@ export default function MorphImage({ src, getStartRect, endRef, onComplete }) {
       ? `translate(${transform.tx}px, ${transform.ty}px) scale(${transform.scaleX}, ${transform.scaleY})`
       : "translate(0, 0) scale(1, 1)",
     willChange: "transform, border-radius",
+    // Pulse on mount, then FLIP transition takes over when transform is set
+    animation: !isAnimating ? `morph-pulse ${pulseDuration}ms var(--ease-out-cubic)` : "none",
     transition: isAnimating
       ? `transform ${scaleDuration(base.morph)}ms var(--ease-out-cubic), border-radius ${scaleDuration(base.morph)}ms var(--ease-out-cubic)`
       : "none",

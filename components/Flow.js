@@ -5,8 +5,10 @@ import flowConfig from "@/config/flow-config";
 import { base, transitions, constants } from "@/config/animation-config";
 import StreamPanel from "./StreamPanel";
 import PromptBanner from "./PromptBanner";
+import ListeningTag from "./ListeningTag";
 import ListingForm from "./listing-form/ListingForm";
 import MorphImage from "./MorphImage";
+import useMicLevel from "../hooks/useMicLevel";
 import { useSpeed } from "./debug/SpeedContext";
 
 /**
@@ -80,8 +82,24 @@ export default function Flow() {
   // Flash when countdown reaches 0, exit footer, then transition to step 3
   const [footerExiting, setFooterExiting] = useState(false);
 
+  // Refs to coordinate async capture with deterministic timeline.
+  // The morph image + form slide-up must start at the same moment — so
+  // mountStep3 is gated on capture completion, not just a timeline offset.
+  const captureReadyRef = useRef(false);
+  const step3PendingRef = useRef(false);
+
+  const mountStep3Now = useCallback(() => {
+    setFlash(false);
+    setFooterExiting(false);
+    setViewfinderActive(false);
+    setCurrentStep(3);
+  }, []);
+
   useEffect(() => {
     if (currentStep === 2 && countdownVisible && countdown === 0) {
+      captureReadyRef.current = false;
+      step3PendingRef.current = false;
+
       // Kick off async capture — when ready, activate morph + hide real thumbnail
       streamRef.current?.captureFrame().then((url) => {
         if (url) {
@@ -89,20 +107,28 @@ export default function Flow() {
           setMorphActive(true);
           setMorphImageVisible(false);
         }
+        captureReadyRef.current = true;
+        // If the timeline already tried to mount step 3, do it now
+        if (step3PendingRef.current) {
+          mountStep3Now();
+        }
       });
 
       const cleanup = scheduleTransition(transitions.captureToListing, {
         flashStart:         () => { setFlash(true); setFooterExiting(true); },
         flashEnd:           () => { setFlash(false); },
-        dismissViewfinder:  () => {
-          setViewfinderActive(false);
-          setFooterExiting(false);
-          setCurrentStep(3);
+        mountStep3:         () => {
+          if (captureReadyRef.current) {
+            mountStep3Now();
+          } else {
+            // Capture still pending — defer step 3 until it resolves
+            step3PendingRef.current = true;
+          }
         },
       }, scaleDuration);
       return cleanup;
     }
-  }, [currentStep, countdownVisible, countdown]);
+  }, [currentStep, countdownVisible, countdown, mountStep3Now]);
 
   // --- Navigation ---
   const handleSnap = useCallback(() => {
@@ -167,6 +193,9 @@ export default function Flow() {
   const isStep2 = currentStep === 2;
   const isStep3 = currentStep === 3;
 
+  // Mic levels — always active, drives ListeningTag waveform in every step
+  const micLevels = useMicLevel(true);
+
   const banner = step2Config.promptBanner;
   const step3Config = flowConfig.steps[2];
 
@@ -179,7 +208,6 @@ export default function Flow() {
       title={banner?.title ?? "Talk, then Snap"}
       subtitle={banner?.subtitle ?? "Talking through details boosts accuracy."}
       delay={scaleDuration(bannerDelay)}
-      active={isStep2}
     />
   ) : undefined;
 
@@ -202,6 +230,7 @@ export default function Flow() {
       footerEntering={footerEntering}
       onFooterEntered={() => setFooterEntering(false)}
       onReset={handleReset}
+      listeningTag={<ListeningTag levels={micLevels} active />}
     >
       {/* Step 2: countdown number + progress ring */}
       {isStep2 && countdownVisible && countdown > 0 && (

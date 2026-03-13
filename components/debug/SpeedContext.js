@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback } from "react";
 
-const SpeedContext = createContext({ speed: 1, scaleDuration: (ms) => ms });
+const SpeedContext = createContext({ speed: 1, scaleDuration: (ms) => ms, liveCamera: false, setLiveCamera: () => {} });
 
 export function useSpeed() {
   return useContext(SpeedContext);
@@ -18,6 +18,7 @@ const SPEED_OPTIONS = [
 
 export function SpeedProvider({ children }) {
   const [speed, setSpeed] = useState(1);
+  const [liveCamera, setLiveCamera] = useState(true);
 
   const scaleDuration = useCallback((ms) => Math.round(ms / speed), [speed]);
 
@@ -31,10 +32,21 @@ export function SpeedProvider({ children }) {
   } : undefined;
 
   return (
-    <SpeedContext.Provider value={{ speed, scaleDuration }}>
+    <SpeedContext.Provider value={{ speed, scaleDuration, liveCamera, setLiveCamera }}>
       <div style={cssVarStyle} className="contents">
         {children}
-        {/* Speed dropdown — fixed top-right */}
+        {/* Debug controls — fixed top corners */}
+        <div className="fixed top-3 left-3 z-[9999]">
+          <label className="flex items-center gap-1.5 bg-panel border border-white/10 text-foreground text-caption rounded-lg px-2 py-1.5 cursor-pointer select-none hover:border-white/20">
+            <input
+              type="checkbox"
+              checked={liveCamera}
+              onChange={(e) => setLiveCamera(e.target.checked)}
+              className="accent-white"
+            />
+            Live Camera
+          </label>
+        </div>
         <div className="fixed top-3 right-3 z-[9999]">
           <select
             value={speed}

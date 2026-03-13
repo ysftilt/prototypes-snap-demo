@@ -1,11 +1,13 @@
 /** Five-bar frequency waveform — driven by mic levels from useMicLevel. */
-import { waveform } from "@/config/design-config";
+import { waveform as waveformDefaults } from "@/config/design-config";
 
-const { barWidth, restingHeights, maxHeight, minOpacity, maxOpacity } = waveform;
+export default function Waveform({ levels = [0, 0, 0, 0, 0], active, restingHeights: restingOverride, maxHeight: maxOverride }) {
+  const { barWidth, barGap, minOpacity, maxOpacity } = waveformDefaults;
+  const restingHeights = restingOverride ?? waveformDefaults.restingHeights;
+  const maxHeight = maxOverride ?? waveformDefaults.maxHeight;
 
-export default function Waveform({ levels = [0, 0, 0, 0, 0], active }) {
   return (
-    <div className="flex items-center" style={{ gap: `${waveform.barGap}px` }}>
+    <div className="flex items-center" style={{ gap: `${barGap}px` }}>
       {restingHeights.map((rest, i) => {
         const base = levels[i] > 0 ? rest : barWidth;
         const h = active
