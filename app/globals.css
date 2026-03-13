@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------
-   Font — Aspekta 650 (semi-bold)
+   Font — Aspekta
    ------------------------------------------------ */
+@font-face {
+  font-family: "Aspekta";
+  src: url("/fonts/Aspekta-500.woff2") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
 @font-face {
   font-family: "Aspekta";
   src: url("/fonts/Aspekta-650.woff2") format("woff2");
@@ -24,11 +31,28 @@
   --color-panel-border: rgba(35, 35, 36, 0.76);
   --color-glass: rgba(43, 42, 44, 0.24);
   --color-foreground: #f7f7f8;
-  --color-foreground-muted: rgba(247, 247, 248, 0.26);
+  --color-foreground-secondary: rgba(247, 247, 248, 0.56);
+  --color-foreground-muted: rgba(247, 247, 248, 0.32);
   --color-page: #141415;
+  --color-interactive: rgba(255, 255, 255, 0.1);
 
-  /* Typography */
+  /* Typography — font family */
   --font-sans: "Aspekta", ui-sans-serif, system-ui, sans-serif;
+
+  /* Typography — type scale (from Figma text styles) */
+  --text-body1: 17px;
+  --leading-body1: 24px;
+  --tracking-body1: -0.17px;
+
+  --text-body2: 15px;
+  --leading-body2: 20px;
+  --tracking-body2: -0.15px;
+
+  --text-footnote: 13px;
+  --leading-footnote: 20px;
+
+  --text-caption: 11px;
+  --leading-caption: 16px;
 
   /* Easing — ease-out family */
   --ease-out-quad: cubic-bezier(.25, .46, .45, .94);
@@ -37,27 +61,140 @@
   --ease-out-quint: cubic-bezier(.23, 1, .32, 1);
   --ease-out-expo: cubic-bezier(.19, 1, .22, 1);
   --ease-out-circ: cubic-bezier(.075, .82, .165, 1);
+  
+  /* Durations — source of truth is config/animation-config.js
+     Run `pnpm check:timing` to verify these stay in sync. */
+  --duration-exit: 250ms;
+  --duration-countdown-pop: 300ms;
+  --duration-slide-up-in: 250ms;
+  --duration-btn-press: 150ms;
+  --duration-flash-punch: 350ms;
+
+  /* Easing — ease-in-out family */
+  --ease-in-out-quad: cubic-bezier(.455, .03, .515, .955);
+  --ease-in-out-cubic: cubic-bezier(.645, .045, .355, 1);
+  --ease-in-out-quart: cubic-bezier(.77, 0, .175, 1);
+  --ease-in-out-quint: cubic-bezier(.86, 0, .07, 1);
+  --ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
+  --ease-in-out-circ: cubic-bezier(.785, .135, .15, .86);
 }
+
 
 /* ------------------------------------------------
    Utilities — Reusable interaction patterns
    ------------------------------------------------ */
 
-/* btn-press: hover scale 0.95, active scale 0.85 */
+/* countdown-pop: number entrance animation */
+@keyframes countdown-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* slide-up-in: prompt banner entrance */
+@keyframes slide-up-in {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* flash-punch: inward scale pulse on capture moment */
+@keyframes flash-punch {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@utility animate-countdown-pop {
+  animation: countdown-pop var(--duration-countdown-pop) var(--ease-out-cubic) both;
+}
+
+@utility animate-slide-up-in {
+  animation: slide-up-in var(--duration-slide-up-in) var(--ease-out-cubic) var(--delay, 100ms) both;
+}
+
+@utility animate-flash-punch {
+  animation: flash-punch var(--duration-flash-punch) var(--ease-out-cubic) both;
+}
+
+/* slide-down-out: listing form dismiss */
+@keyframes slide-down-out {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(40px); opacity: 0; }
+}
+
+@utility animate-slide-down-out {
+  animation: slide-down-out var(--duration-exit) var(--ease-out-cubic) both;
+}
+/* transition-exit: reusable exit transition system
+   Apply .transition-exit to any element, then toggle .exit-up or .exit-down.
+   Duration and easing are easy to tweak in one place. */
+.transition-exit {
+  transition: transform var(--duration-exit) var(--ease-out-cubic),
+              opacity var(--duration-exit) var(--ease-out-cubic);
+}
+
+.transition-exit.exit-up {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.transition-exit.exit-down {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+/* ------------------------------------------------
+   Typography — Figma text styles
+   Usage: <p class="text-body1 font-[650]">…</p>
+   Weight is not included — pair with font-[500] or font-[650].
+   ------------------------------------------------ */
+@utility text-body1 {
+  font-size: var(--text-body1);
+  line-height: var(--leading-body1);
+  letter-spacing: var(--tracking-body1);
+}
+
+@utility text-body2 {
+  font-size: var(--text-body2);
+  line-height: var(--leading-body2);
+  letter-spacing: var(--tracking-body2);
+}
+
+@utility text-footnote {
+  font-size: var(--text-footnote);
+  line-height: var(--leading-footnote);
+}
+
+@utility text-caption {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+/* btn-press: hover highlight + active scale down */
 @utility btn-press {
-  transition: transform 150ms var(--ease-out-quart),
-              background-color 150ms var(--ease-out-quart);
+  transition: transform var(--duration-btn-press) var(--ease-out-quart),
+              box-shadow var(--duration-btn-press) var(--ease-out-quart);
   &:hover {
-    transform: scale(1);
-    background-color: color-mix(in srgb, currentColor 4%, transparent);
-    background-blend-mode: lighten;
+    transform: scale(0.98);
+    box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.1);
   }
   &:active {
     transform: scale(0.95);
-    background-color: color-mix(in srgb, currentColor 12%, transparent);
-    background-blend-mode: lighten;
+    box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.2);
   }
 }
+
+
+/* ------------------------------------------------
+   Countdown Bar — pause/play button hover
+   ------------------------------------------------ */
+.countdown-btn {
+  transition: background-color 150ms ease;
+}
+.countdown-btn:hover {
+  background-color: rgba(255, 255, 255, 0.10);
+}
+
 
 /* ------------------------------------------------
    Base — Global body styles

@@ -6,7 +6,12 @@
  */
 
 import Flow from "@/components/Flow";
+import { SpeedProvider } from "@/components/debug/SpeedContext";
 
 export default function Home() {
-  return <Flow />;
+  return (
+    <SpeedProvider>
+      <Flow />
+    </SpeedProvider>
+  );
 }

@@ -1,62 +1,266 @@
-/*
- * Flow.js — Flow Controller
- *
- * This component owns the "current step" state and decides which
- * step component to show. It's the brain of the 3-step flow.
- *
- * How it works:
- *   - useState(1) tracks which step we're on (1, 2, or 3)
- *   - goNext() increments the step
- *   - goBack() decrements the step
- *   - onFinish() is called when the user completes the last step
- *   - Simple if/else decides which Step component to render
- */
-
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import flowConfig from "@/config/flow-config";
-import StepOne from "./StepOne";
-import StepTwo from "./StepTwo";
-import StepThree from "./StepThree";
+import { base, transitions, constants } from "@/config/animation-config";
+import StreamPanel from "./StreamPanel";
+import PromptBanner from "./PromptBanner";
+import ListingForm from "./listing-form/ListingForm";
+import MorphImage from "./MorphImage";
+import { useSpeed } from "./debug/SpeedContext";
+
+/**
+ * Schedule a batch of callbacks at the offsets defined in a timeline object.
+ * Offset-0 handlers fire synchronously (critical for React state batching).
+ * `scale` transforms every delay (e.g. for debug playback speed).
+ * Returns a cleanup function that clears all pending timers.
+ */
+function scheduleTransition(timeline, handlers, scale = (ms) => ms) {
+  const timers = [];
+  for (const [key, at] of Object.entries(timeline)) {
+    if (!handlers[key]) continue;
+    if (at === 0) {
+      handlers[key]();
+    } else {
+      timers.push(setTimeout(handlers[key], scale(at)));
+    }
+  }
+  return () => timers.forEach(clearTimeout);
+}
+
+// Countdown start delay: time from mountStep2 to countdownStart
+const COUNTDOWN_START_DELAY =
+  transitions.idleToCapture.countdownStart - transitions.idleToCapture.mountStep2;
 
 export default function Flow() {
-  // currentStep tracks which step is visible (1, 2, or 3)
+  const { scaleDuration } = useSpeed();
+  const streamRef = useRef(null);
+  const productImageRef = useRef(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [exiting, setExiting] = useState(false);
+  const [viewfinderActive, setViewfinderActive] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [morphActive, setMorphActive] = useState(false);
+  const [morphImageVisible, setMorphImageVisible] = useState(true);
 
-  // Move to the next step
-  function goNext() {
-    setCurrentStep(currentStep + 1);
-  }
+  // --- Step 2: countdown ---
+  const step2Config = flowConfig.steps[1];
+  const countdownStart = step2Config.countdownStart || 3;
+  const [countdown, setCountdown] = useState(countdownStart);
+  const [countdownVisible, setCountdownVisible] = useState(false);
+  const [ringDepleted, setRingDepleted] = useState(false);
 
-  // Move to the previous step
-  function goBack() {
-    setCurrentStep(currentStep - 1);
-  }
+  // Reset countdown when entering step 2; show after start delay
+  useEffect(() => {
+    if (currentStep === 2) {
+      setCountdown(countdownStart);
+      setCountdownVisible(false);
+      setRingDepleted(false);
+      const t = setTimeout(() => {
+        setCountdownVisible(true);
+        // Flip ringDepleted after a frame so the transition kicks in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setRingDepleted(true));
+        });
+      }, scaleDuration(COUNTDOWN_START_DELAY));
+      return () => clearTimeout(t);
+    }
+    setCountdownVisible(false);
+    setRingDepleted(false);
+  }, [currentStep, countdownStart]);
 
-  // Called when the user finishes the entire flow
-  function onFinish() {
-    // For now, just reset to step 1
-    // Later this could navigate away, show a success screen, etc.
+  // Countdown chain — starts ticking once visible
+  useEffect(() => {
+    if (currentStep !== 2 || !countdownVisible || countdown <= 0) return;
+
+    const t = setTimeout(() => setCountdown((c) => c - 1), scaleDuration(constants.countdownInterval));
+    return () => clearTimeout(t);
+  }, [currentStep, countdownVisible, countdown, countdownStart]);
+
+  // Flash when countdown reaches 0, exit footer, then transition to step 3
+  const [footerExiting, setFooterExiting] = useState(false);
+
+  useEffect(() => {
+    if (currentStep === 2 && countdownVisible && countdown === 0) {
+      // Kick off async capture — when ready, activate morph + hide real thumbnail
+      streamRef.current?.captureFrame().then((url) => {
+        if (url) {
+          setCapturedImage(url);
+          setMorphActive(true);
+          setMorphImageVisible(false);
+        }
+      });
+
+      const cleanup = scheduleTransition(transitions.captureToListing, {
+        flashStart:         () => { setFlash(true); setFooterExiting(true); },
+        flashEnd:           () => { setFlash(false); },
+        dismissViewfinder:  () => {
+          setViewfinderActive(false);
+          setFooterExiting(false);
+          setCurrentStep(3);
+        },
+      }, scaleDuration);
+      return cleanup;
+    }
+  }, [currentStep, countdownVisible, countdown]);
+
+  // --- Navigation ---
+  const handleSnap = useCallback(() => {
+    const cleanup = scheduleTransition(transitions.idleToCapture, {
+      exitStart:   () => { setExiting(true); setViewfinderActive(true); },
+      mountStep2:  () => { setExiting(false); setCurrentStep(2); },
+    }, scaleDuration);
+    // Store cleanup ref for potential teardown (not strictly needed for snap)
+    return cleanup;
+  }, []);
+
+  const [flash, setFlash] = useState(false);
+  const [footerEntering, setFooterEntering] = useState(false);
+
+  const handleBack = useCallback(() => {
+    setViewfinderActive(false);
+    setFooterEntering(true);
     setCurrentStep(1);
-  }
+  }, []);
 
-  // Pull the config for the current step (array is 0-indexed, steps are 1-indexed)
-  const stepConfig = flowConfig.steps[currentStep - 1];
+  const [listingDismissing, setListingDismissing] = useState(false);
 
-  // Render the right component based on currentStep
-  if (currentStep === 1) {
-    return <StepOne config={stepConfig} onNext={goNext} />;
-  }
+  const handleFinish = useCallback(() => {
+    setCurrentStep(1);
+  }, []);
 
-  if (currentStep === 2) {
-    return <StepTwo config={stepConfig} onNext={goNext} onBack={goBack} />;
-  }
+  const handleReset = useCallback(() => {
+    setCurrentStep(1);
+    setExiting(false);
+    setViewfinderActive(false);
+    setCapturedImage(null);
+    setCountdown(countdownStart);
+    setCountdownVisible(false);
+    setRingDepleted(false);
+    setFooterExiting(false);
+    setFlash(false);
+    setFooterEntering(false);
+    setMorphActive(false);
+    setMorphImageVisible(true);
+    setListingDismissing(false);
+  }, [countdownStart]);
 
-  if (currentStep === 3) {
-    return <StepThree config={stepConfig} onBack={goBack} onFinish={onFinish} />;
-  }
+  const handleCountdownComplete = useCallback(() => {
+    setListingDismissing(true);
+    setTimeout(() => {
+      handleReset();
+      setFooterEntering(true);
+    }, scaleDuration(base.exit));
+  }, [handleReset, scaleDuration]);
 
-  // Fallback (should never happen)
-  return null;
+  const getStartRect = useCallback(() => {
+    return streamRef.current?.getViewfinderRect() ?? null;
+  }, []);
+
+  const handleMorphComplete = useCallback(() => {
+    setMorphActive(false);
+    setMorphImageVisible(true);
+  }, []);
+
+  // --- Compute StreamPanel props per step ---
+  const isStep1 = currentStep === 1;
+  const isStep2 = currentStep === 2;
+  const isStep3 = currentStep === 3;
+
+  const banner = step2Config.promptBanner;
+  const step3Config = flowConfig.steps[2];
+
+  // Step 1: default SnapButton (via fallback in StreamPanel)
+  // Step 2: PromptBanner replaces SnapButton
+  // Step 3: no footer — ListingForm is standalone
+  const bannerDelay = transitions.idleToCapture.bannerAppear - transitions.idleToCapture.mountStep2;
+  const footer = isStep2 ? (
+    <PromptBanner
+      title={banner?.title ?? "Talk, then Snap"}
+      subtitle={banner?.subtitle ?? "Talking through details boosts accuracy."}
+      delay={scaleDuration(bannerDelay)}
+      active={isStep2}
+    />
+  ) : undefined;
+
+  const hideFooter = isStep3;
+
+  return (
+    <StreamPanel
+      ref={streamRef}
+      onSnap={isStep1 ? handleSnap : isStep3 ? handleFinish : undefined}
+      exiting={isStep1 && exiting}
+      footerExiting={footerExiting}
+      hideHeader={viewfinderActive}
+      hideFooter={hideFooter}
+      viewfinderActive={viewfinderActive}
+      viewfinderDuration={scaleDuration(base.viewfinder)}
+      onViewfinderClick={handleBack}
+      flash={flash}
+      capturedImage={capturedImage}
+      footer={footer}
+      footerEntering={footerEntering}
+      onFooterEntered={() => setFooterEntering(false)}
+      onReset={handleReset}
+    >
+      {/* Step 2: countdown number + progress ring */}
+      {isStep2 && countdownVisible && countdown > 0 && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none ">
+          {/* Progress ring — depletes over full countdown, glows on last tick */}
+          <svg
+            className="absolute animate-countdown-pop"
+            width="160"
+            height="160"
+            viewBox="0 0 160 160"
+            style={{
+              filter: countdown === 1
+                ? "drop-shadow(0 0 12px rgba(255, 255, 255, 0.5))"
+                : "drop-shadow(0 0 0px rgba(255, 255, 255, 0))",
+              transition: `filter ${scaleDuration(base.morph)}ms var(--ease-out-cubic)`,
+            }}
+          >
+            <g transform="rotate(-90 80 80)">
+              <circle
+                cx="80"
+                cy="80"
+                r="68"
+                fill="none"
+                stroke="white"
+                strokeWidth="8"
+                strokeLinecap="round"
+                strokeDasharray={Math.PI * 2 * 68}
+                style={{
+                  strokeDashoffset: ringDepleted ? -(Math.PI * 2 * 68) : 0,
+                  transition: ringDepleted
+                    ? `stroke-dashoffset ${countdownStart * scaleDuration(constants.countdownInterval)}ms linear`
+                    : "none",
+                }}
+              />
+            </g>
+          </svg>
+          {/* Number */}
+          <div key={countdown} className="animate-countdown-pop">
+            <span className="text-[96px] leading-none font-[650] text-foreground tabular-nums">
+              {countdown}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: listing form */}
+      {isStep3 && step3Config.listingForm && (
+        <ListingForm config={step3Config.listingForm} capturedImage={capturedImage} productImageRef={productImageRef} imageVisible={morphImageVisible} onCountdownComplete={handleCountdownComplete} dismissing={listingDismissing} />
+      )}
+
+      {/* Photo morph — floating image from viewfinder to thumbnail */}
+      {morphActive && capturedImage && (
+        <MorphImage
+          src={capturedImage}
+          getStartRect={getStartRect}
+          endRef={productImageRef}
+          onComplete={handleMorphComplete}
+        />
+      )}
+    </StreamPanel>
+  );
 }
