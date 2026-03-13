@@ -87,6 +87,7 @@ export default function Flow() {
   const step3PendingRef = useRef(false);
 
   const mountStep3Now = useCallback(() => {
+    setFlash(false);
     setFooterExiting(false);
     setViewfinderActive(false);
     setCurrentStep(3);
@@ -114,9 +115,6 @@ export default function Flow() {
       const cleanup = scheduleTransition(transitions.captureToListing, {
         flashStart:         () => { setFlash(true); setFooterExiting(true); },
         flashEnd:           () => { setFlash(false); },
-        dismissViewfinder:  () => {
-          setViewfinderActive(false);
-        },
         mountStep3:         () => {
           if (captureReadyRef.current) {
             mountStep3Now();

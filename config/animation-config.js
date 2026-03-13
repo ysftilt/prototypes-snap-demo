@@ -12,9 +12,10 @@ export const base = {
   exit:           250,   // header/footer exit-up/exit-down (CSS synced)
   viewfinder:     250,   // viewfinder inset contraction
   countdownPop:   300,   // countdown number entrance (CSS synced)
-  flashHold:      250,   // how long flash stays at full white
+  flashHold:      100,   // brief shutter flash — fades to reveal morph mid-flight
   flashFade:      200,   // how long flash takes to fade out
   flashPunch:     350,   // flash-punch scale pulse (CSS synced)
+  morphHold:      400,   // captured image holds in viewfinder before flying
   morph:          350,   // photo morph viewfinder → thumbnail
   slideUpIn:      250,   // slide-up entrance default (CSS synced)
   btnPress:       150,   // button hover/active scale (CSS synced)
@@ -32,13 +33,13 @@ export const transitions = {
     countdownStart:   80 + (base.viewfinder - base.exit) + base.exit + 100,
   },
 
-  // Morph activation is gated on capture completion + form mount, not a
-  // timeline offset. See captureReadyRef / step3PendingRef in Flow.js.
+  // mountStep3 fires at 0 but is gated on async capture completion (~20ms).
+  // Step 3 mounts behind the opaque flash; flash then fades to reveal
+  // the morph image already in flight. See captureReadyRef in Flow.js.
   captureToListing: {
     flashStart:        0,                                          // flash on + footer exit begin
-    flashEnd:          base.flashHold,                             // flash begins fade-out
-    mountStep3:        base.flashHold + base.viewfinder,           // form mounts (gated on capture ready)
-    dismissViewfinder: base.flashHold + base.viewfinder,           // scrim fades as morph image flies
+    flashEnd:          base.flashHold,                             // flash fades to reveal held image
+    mountStep3:        base.morphHold,                             // image holds, then form + morph fly together
   },
 
   listingToIdle: {
